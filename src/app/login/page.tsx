@@ -1,7 +1,7 @@
 import Image from "next/image";
-import { RegisterForm } from "@/components/auth/register-form";
+import { LoginForm } from "@/components/auth/login-form";
 
-export default function Register() {
+export default function Login() {
   return (
     <div className="auth-container">
       <div className="text-center">
@@ -13,10 +13,10 @@ export default function Register() {
           priority
         />
         <h1 className="text-2xl font-bold mt-4">
-          Créer un compte
+          Se connecter
         </h1>
       </div>
-      <RegisterForm />
+      <LoginForm />
     </div>
   );
 } 
