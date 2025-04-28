@@ -1,0 +1,95 @@
+"""
+Voici la documentation de l'application.
+Je te demande de toujours te référer à cette documentation pour développer l'application.
+Lors de ton développment tu détailleras tes choix et tes décisions afin que je puisse comprendre ton raisonnement et le valider.
+
+✅ 🎯 Objectif de l'app 4 CAPS IA
+Créer une plateforme collaborative alimentée par une IA (Claude), permettant aux acteurs du BTP de mieux remplir leurs missions : 
+comprendre, décider, et collaborer plus vite grâce à une interface simple et un chat intelligent.
+
+Tout d'abord voyons la structure fonctionnelle de l'application.
+
+🧱 Structure fonctionnelle
+
+L'application est composée de 3 panneaux :
+
+- le panneau gauche : Documents
+- le panneau central : Visualisation
+- le panneau droit : Chat IA (Claude)
+
+🗂️ Panneau gauche : Documents
+
+Simple arborescence de dossiers
+Actions : upload, renommage, suppression, tri
+Pas besoin d’aperçus ou d’annotations pour le moment
+
+🖥️ Panneau central : Visualisation
+
+Affichage de :  
+
+- PDF (via pdf.js)
+- Word / Excel (via Microsoft Office Viewer)
+- Plans 2D / Maquettes 3D (via Autodesk Forge Viewer)
+
+Sélection d’un fichier dans le panneau gauche → affichage dans le panneau central
+
+💬 Panneau droit : Chat IA (Claude)
+Copilote IA intégré comme Cursor
+
+Exemples de fonctionnalités:
+
+- Résumés de documents ouverts
+- Questions ciblées sur contenu
+- Génération de comptes-rendus
+- Aide contextuelle par rôle (MOE, MOA, etc.)
+
+Modèle : Claude 3 Opus (idéal pour le long et structuré)
+
+🧠 Intelligence IA : Mécanique de RAG
+
+Embeddings : transformer les documents en vecteurs
+
+RAG :
+- L'utilisateur pose une question
+- On retrouve les passages pertinents via les embeddings
+- On alimente Claude avec ces passages comme contexte
+
+Objectif : des réponses précises et sourcées
+
+Stack :
+- Langchain pour la logique
+- Supabase Vector pour stocker les embeddings
+
+🧰 Stack Technique
+
+Frontend : React + Tailwind + Shadcn/ui (Cursor)
+Backend : Supabase (auth, BDD, storage, vector store)
+Viewer : PDF.js, Microsoft Office Viewer, Autodesk Forge Viewer
+Chat IA : Claude 3 Opus via Anthropic API
+IA + RAG : Langchain + Supabase Vector
+Stockage fichiers : Supabase Storage (PDF, .docx, .xlsx, .dwg, .rvt, .ifc...)
+
+🔑 Authentification
+
+- Authentification via Google OAuth
+- Authentification via email/mot de passe
+
+
+
+----
+ETAPES DE DÉVELOPPEMENT 
+
+1. Implémenter l'authentification avec Supabase
+2. Créer les composants pour la gestion des documents
+3. Intégrer les différents viewers (PDF.js, Microsoft Office Viewer, Autodesk Forge)
+4. Mettre en place l'intégration avec Claude et le système RAG
+----
+
+INFORMATIONS SUPABASE
+
+mot de passe : Bazalex.10
+URL : https://cdpalrnckouanozfohcz.supabase.co
+ANON PUBLIC : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkcGFscm5ja291YW5vemZvaGN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU1MTQ4ODQsImV4cCI6MjA2MTA5MDg4NH0.kXEAzYsHJ6UuG2wdNKD4CUQWt-w6Mlw8ropk2j5F0po
+SERVICE ROLE SECRET : eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNkcGFscm5ja291YW5vemZvaGN6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0NTUxNDg4NCwiZXhwIjoyMDYxMDkwODg0fQ.uEQuYjRq8TW2Ze6m4cybf3SgWfv5JsfMAgKusshcLR8
+
+"""
