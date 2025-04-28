@@ -2,11 +2,22 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Link from "next/link"
 
-export function LoginForm() {
+export function RegisterForm() {
   return (
     <div className="w-full max-w-sm p-6 bg-card rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6">Connexion</h2>
+      <h2 className="text-2xl font-bold text-center mb-6">Inscription</h2>
       <form className="space-y-4">
+        <div className="space-y-2">
+          <label htmlFor="name" className="text-sm font-medium">
+            Nom complet
+          </label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="John Doe"
+            required
+          />
+        </div>
         <div className="space-y-2">
           <label htmlFor="email" className="text-sm font-medium">
             Email
@@ -30,23 +41,16 @@ export function LoginForm() {
           />
         </div>
         <Button className="w-full">
-          Se connecter
+          S'inscrire
         </Button>
       </form>
-      <div className="mt-4 text-center text-sm space-y-2">
-        <div>
-          <Link href="#" className="text-primary hover:underline">
-            Mot de passe oublié ?
+      <div className="mt-4 text-center text-sm">
+        <p>
+          Déjà un compte ?{" "}
+          <Link href="/" className="text-primary hover:underline">
+            Se connecter
           </Link>
-        </div>
-        <div>
-          <p>
-            Pas encore de compte ?{" "}
-            <Link href="/register" className="text-primary hover:underline">
-              S'inscrire
-            </Link>
-          </p>
-        </div>
+        </p>
       </div>
     </div>
   )
