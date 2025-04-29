@@ -19,9 +19,10 @@ export function RegisterForm() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    console.log("Tentative d'inscription avec:", { email, name })
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -31,11 +32,27 @@ export function RegisterForm() {
         },
       })
 
-      if (signUpError) throw signUpError
+      console.log("Réponse inscription Supabase:", { data, error: signUpError })
 
-      router.push("/dashboard")
+      if (signUpError) {
+        console.error("Erreur détaillée inscription:", signUpError)
+        throw signUpError
+      }
+
+      if (data?.user) {
+        console.log("Inscription réussie, redirection...")
+        router.push("/dashboard")
+      } else {
+        console.log("Inscription en attente de confirmation email")
+        setError("Vérifiez votre email pour confirmer votre inscription")
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Une erreur est survenue")
+      console.error("Erreur complète inscription:", error)
+      if (error instanceof Error) {
+        setError(`Erreur: ${error.message}`)
+      } else {
+        setError("Une erreur est survenue lors de l'inscription")
+      }
     } finally {
       setLoading(false)
     }
@@ -43,16 +60,26 @@ export function RegisterForm() {
 
   const handleGoogleRegister = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
 
-      if (error) throw error
+      console.log("Réponse Google OAuth:", { data, error })
+
+      if (error) {
+        console.error("Erreur Google OAuth:", error)
+        throw error
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Une erreur est survenue")
+      console.error("Erreur complète Google:", error)
+      if (error instanceof Error) {
+        setError(`Erreur Google: ${error.message}`)
+      } else {
+        setError("Une erreur est survenue avec l'inscription Google")
+      }
     }
   }
 
