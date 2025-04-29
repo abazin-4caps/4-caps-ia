@@ -18,18 +18,32 @@ export function LoginForm() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    console.log("Tentative de connexion avec:", email)
 
     try {
-      const { error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      if (error) throw error
+      console.log("Réponse Supabase:", { data, error })
 
-      router.push("/dashboard")
+      if (error) {
+        console.error("Erreur détaillée:", error)
+        throw error
+      }
+
+      if (data?.user) {
+        console.log("Connexion réussie, redirection...")
+        router.push("/dashboard")
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Une erreur est survenue")
+      console.error("Erreur complète:", error)
+      if (error instanceof Error) {
+        setError(`Erreur: ${error.message}`)
+      } else {
+        setError("Une erreur est survenue lors de la connexion")
+      }
     } finally {
       setLoading(false)
     }
@@ -37,16 +51,26 @@ export function LoginForm() {
 
   const handleGoogleLogin = async () => {
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback`
         }
       })
 
-      if (error) throw error
+      console.log("Réponse Google OAuth:", { data, error })
+
+      if (error) {
+        console.error("Erreur Google OAuth:", error)
+        throw error
+      }
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Une erreur est survenue")
+      console.error("Erreur complète Google:", error)
+      if (error instanceof Error) {
+        setError(`Erreur Google: ${error.message}`)
+      } else {
+        setError("Une erreur est survenue avec la connexion Google")
+      }
     }
   }
 
