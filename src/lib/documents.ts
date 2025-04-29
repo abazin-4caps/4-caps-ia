@@ -127,7 +127,7 @@ export async function deleteDocument(id: string) {
 
     // 4. Supprimer les enfants s'il y en a
     if (children && children.length > 0) {
-      const childrenIds = children.map(child => child.id)
+      const childrenIds = children.map((child: { id: string }) => child.id)
       const { error: deleteChildrenError } = await supabase
         .from('documents')
         .delete()
