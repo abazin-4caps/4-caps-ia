@@ -4,7 +4,7 @@ import { DashboardHeader } from "@/components/dashboard/header"
 import { DashboardShell } from "@/components/dashboard/shell"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Building, CheckCircle, FileText, SortAsc } from "lucide-react"
+import { Building, CheckCircle, FileText, SlidersHorizontal, ArrowUpDown } from "lucide-react"
 import { ProjectCard } from "@/components/dashboard/project-card"
 import { useEffect, useState } from "react"
 import { Project } from "@/types"
@@ -152,30 +152,34 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="flex justify-between items-center mb-6">
-        <div className="flex gap-4">
-          <Select value={filterStatus} onValueChange={(value: FilterOption) => setFilterStatus(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Filtrer par statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les projets</SelectItem>
-              <SelectItem value="en_cours">En cours</SelectItem>
-              <SelectItem value="terminé">Terminés</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex gap-4 mb-6">
+        <Select value={filterStatus} onValueChange={(value: FilterOption) => setFilterStatus(value)}>
+          <SelectTrigger className="w-[140px] bg-white">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="h-4 w-4" />
+              <span>Filtres</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectItem value="all">Tous les projets</SelectItem>
+            <SelectItem value="en_cours">En cours</SelectItem>
+            <SelectItem value="terminé">Terminés</SelectItem>
+          </SelectContent>
+        </Select>
 
-          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Trier par" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="date">Date</SelectItem>
-              <SelectItem value="title">Titre</SelectItem>
-              <SelectItem value="status">Statut</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+          <SelectTrigger className="w-[140px] bg-white">
+            <div className="flex items-center gap-2">
+              <ArrowUpDown className="h-4 w-4" />
+              <span>Trier par</span>
+            </div>
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            <SelectItem value="date">Date</SelectItem>
+            <SelectItem value="title">Titre</SelectItem>
+            <SelectItem value="status">Statut</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
