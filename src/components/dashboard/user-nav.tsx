@@ -45,9 +45,9 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-blue-600">
               <span className="sr-only">Menu utilisateur</span>
-              <UserIcon className="h-4 w-4" />
+              <UserIcon className="h-4 w-4 text-white" />
             </AvatarFallback>
           </Avatar>
         </Button>
