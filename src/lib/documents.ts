@@ -98,12 +98,21 @@ export async function deleteDocument(id: string) {
     if (storageError) throw storageError
   }
 
-  // 3. Supprimer le document et tous ses enfants
+  // 3. D'abord supprimer les enfants
+  const { error: deleteChildrenError } = await supabase
+    .from('documents')
+    .delete()
+    .neq('id', id)
+    .eq('project_id', doc.project_id)
+    .contains('path', [doc.path])
+
+  if (deleteChildrenError) throw deleteChildrenError
+
+  // 4. Ensuite supprimer le document lui-même
   const { error: deleteError } = await supabase
     .from('documents')
     .delete()
-    .filter('path', 'like', `${doc.path}%`)
-    .or(`id.eq.${id}`)
+    .eq('id', id)
 
   if (deleteError) throw deleteError
 }
