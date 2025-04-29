@@ -81,4 +81,42 @@ export async function deleteDocument(id: string) {
     .eq('id', id)
 
   if (error) throw error
+}
+
+export async function uploadFile(file: File, projectId: string, parentId?: string) {
+  try {
+    // 1. Créer l'entrée dans la table documents
+    const document = await createDocument({
+      name: file.name,
+      type: 'file',
+      project_id: projectId,
+      parent_id: parentId
+    })
+
+    // 2. Upload le fichier dans le bucket
+    const filePath = `${projectId}/${document.id}/${file.name}`
+    const { error: uploadError } = await supabase.storage
+      .from('documents')
+      .upload(filePath, file)
+
+    if (uploadError) {
+      // Si l'upload échoue, supprimer l'entrée dans la table
+      await deleteDocument(document.id)
+      throw uploadError
+    }
+
+    // 3. Mettre à jour le document avec l'URL du fichier
+    const { data: { publicUrl } } = supabase.storage
+      .from('documents')
+      .getPublicUrl(filePath)
+
+    await updateDocument(document.id, {
+      file_url: publicUrl
+    })
+
+    return document
+  } catch (error) {
+    console.error('Error uploading file:', error)
+    throw error
+  }
 } 
