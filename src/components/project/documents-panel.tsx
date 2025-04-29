@@ -9,6 +9,14 @@ import {
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@/components/ui/context-menu"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Document } from "@/types/document"
 import { getProjectDocuments, createDocument, uploadFile } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
@@ -22,6 +30,9 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
+  const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [newFolderName, setNewFolderName] = useState("")
+  const [selectedParentId, setSelectedParentId] = useState<string | undefined>()
   const { toast } = useToast()
 
   useEffect(() => {
@@ -44,14 +55,31 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
     }
   }
 
-  const handleCreateFolder = async () => {
+  const handleCreateFolder = async (parentId?: string) => {
+    setSelectedParentId(parentId)
+    setNewFolderName("")
+    setIsCreateFolderOpen(true)
+  }
+
+  const handleCreateFolderSubmit = async () => {
+    if (!newFolderName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le nom du dossier ne peut pas être vide",
+        variant: "destructive"
+      })
+      return
+    }
+
     try {
-      const newFolder = await createDocument({
-        name: "Nouveau dossier",
+      await createDocument({
+        name: newFolderName.trim(),
         type: "folder",
-        project_id: projectId
+        project_id: projectId,
+        parent_id: selectedParentId
       })
       await loadDocuments()
+      setIsCreateFolderOpen(false)
       toast({
         title: "Succès",
         description: "Dossier créé avec succès"
@@ -117,6 +145,7 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
           <ContextMenuTrigger>
             <div
               className="flex items-center gap-2 py-1 px-2 hover:bg-slate-100 rounded-md cursor-pointer"
+              style={{ paddingLeft: `${(depth + 1) * 12}px` }}
               onClick={() => {
                 if (doc.type === 'folder') {
                   toggleFolder(doc)
@@ -140,7 +169,7 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
           <ContextMenuContent>
             {doc.type === 'folder' && (
               <>
-                <ContextMenuItem onClick={() => handleCreateFolder()}>
+                <ContextMenuItem onClick={() => handleCreateFolder(doc.id)}>
                   Nouveau dossier
                 </ContextMenuItem>
                 <ContextMenuItem onClick={() => handleImport(doc.id)}>
@@ -181,7 +210,7 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
             variant="ghost" 
             size="icon" 
             title="Nouveau dossier"
-            onClick={handleCreateFolder}
+            onClick={() => handleCreateFolder()}
             disabled={uploading}
           >
             <Plus className="h-4 w-4" />
@@ -210,6 +239,34 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
           renderDocuments(documents)
         )}
       </div>
+
+      <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Créer un nouveau dossier</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Nom du dossier"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleCreateFolderSubmit()
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateFolderOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleCreateFolderSubmit}>
+              Créer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 } 
