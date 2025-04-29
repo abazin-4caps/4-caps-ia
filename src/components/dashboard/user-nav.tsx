@@ -14,6 +14,7 @@ import {
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { useState, useEffect } from "react"
+import { UserIcon } from "@/components/icons/user"
 
 export function UserNav() {
   const router = useRouter()
@@ -44,7 +45,10 @@ export function UserNav() {
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-            <AvatarFallback>{userInitials}</AvatarFallback>
+            <AvatarFallback>
+              <span className="sr-only">Menu utilisateur</span>
+              <UserIcon className="h-4 w-4" />
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
