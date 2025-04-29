@@ -1,17 +1,7 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import Link from "next/link"
-
-interface Project {
-  id: number
-  title: string
-  description: string
-  address: string
-  status: string
-  createdAt: string
-}
+import { Project } from "@/types"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface ProjectCardProps {
   project: Project
@@ -19,25 +9,29 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <Card className="p-4 mb-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h3 className="text-lg font-semibold">{project.title}</h3>
-            <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
+    <Card>
+      <CardHeader>
+        <CardTitle>{project.title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex flex-col space-y-2">
+          <p className="text-sm text-muted-foreground">
+            {project.description}
+          </p>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Status:</span>
+            <span className="text-sm text-muted-foreground capitalize">
               {project.status}
             </span>
           </div>
-          <p className="text-sm text-gray-500 mt-1">{project.description}</p>
-          <p className="text-sm text-gray-500 mt-1">{project.address}</p>
-          <p className="text-sm text-gray-500 mt-1">Créé le {project.createdAt}</p>
+          <div className="flex items-center space-x-2">
+            <span className="text-sm font-medium">Created:</span>
+            <span className="text-sm text-muted-foreground">
+              {new Date(project.created_at).toLocaleDateString()}
+            </span>
+          </div>
         </div>
-        <Button variant="outline" asChild>
-          <Link href={`/projects/${project.id}`}>
-            Voir les détails
-          </Link>
-        </Button>
-      </div>
+      </CardContent>
     </Card>
   )
 } 
