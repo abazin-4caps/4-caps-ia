@@ -1,13 +1,14 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FolderTree, File, FolderOpen, FolderClosed, Plus, Upload } from "lucide-react"
+import { FolderTree, File, FolderOpen, FolderClosed, Plus, Upload, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   ContextMenu,
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
+  ContextMenuSeparator,
 } from "@/components/ui/context-menu"
 import {
   Dialog,
@@ -15,10 +16,11 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Document } from "@/types/document"
-import { getProjectDocuments, createDocument, uploadFile } from "@/lib/documents"
+import { getProjectDocuments, createDocument, uploadFile, updateDocument, deleteDocument } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
 
 interface DocumentsPanelProps {
@@ -31,8 +33,11 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   const [loading, setLoading] = useState(true)
   const [uploading, setUploading] = useState(false)
   const [isCreateFolderOpen, setIsCreateFolderOpen] = useState(false)
+  const [isRenameOpen, setIsRenameOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
   const [newFolderName, setNewFolderName] = useState("")
   const [selectedParentId, setSelectedParentId] = useState<string | undefined>()
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const { toast } = useToast()
 
   useEffect(() => {
@@ -89,6 +94,70 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
       toast({
         title: "Erreur",
         description: "Impossible de créer le dossier",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleRename = (doc: Document) => {
+    setSelectedDocument(doc)
+    setNewFolderName(doc.name)
+    setIsRenameOpen(true)
+  }
+
+  const handleRenameSubmit = async () => {
+    if (!selectedDocument || !newFolderName.trim()) {
+      toast({
+        title: "Erreur",
+        description: "Le nom ne peut pas être vide",
+        variant: "destructive"
+      })
+      return
+    }
+
+    try {
+      await updateDocument(selectedDocument.id, {
+        name: newFolderName.trim()
+      })
+      await loadDocuments()
+      setIsRenameOpen(false)
+      toast({
+        title: "Succès",
+        description: "Document renommé avec succès"
+      })
+    } catch (error) {
+      console.error('Error renaming document:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de renommer le document",
+        variant: "destructive"
+      })
+    }
+  }
+
+  const handleDelete = (doc: Document) => {
+    setSelectedDocument(doc)
+    setIsDeleteOpen(true)
+  }
+
+  const handleDeleteSubmit = async () => {
+    if (!selectedDocument) return
+
+    try {
+      await deleteDocument(selectedDocument.id)
+      await loadDocuments()
+      setIsDeleteOpen(false)
+      toast({
+        title: "Succès",
+        description: selectedDocument.type === 'folder' 
+          ? "Dossier supprimé avec succès"
+          : "Fichier supprimé avec succès"
+      })
+    } catch (error) {
+      console.error('Error deleting document:', error)
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer le document",
         variant: "destructive"
       })
     }
@@ -170,14 +239,25 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
             {doc.type === 'folder' && (
               <>
                 <ContextMenuItem onClick={() => handleCreateFolder(doc.id)}>
+                  <Plus className="h-4 w-4 mr-2" />
                   Nouveau dossier
                 </ContextMenuItem>
                 <ContextMenuItem onClick={() => handleImport(doc.id)}>
+                  <Upload className="h-4 w-4 mr-2" />
                   Importer des fichiers
                 </ContextMenuItem>
+                <ContextMenuSeparator />
               </>
             )}
-            <ContextMenuItem className="text-red-600">
+            <ContextMenuItem onClick={() => handleRename(doc)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Renommer
+            </ContextMenuItem>
+            <ContextMenuItem 
+              onClick={() => handleDelete(doc)}
+              className="text-red-600"
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
               Supprimer
             </ContextMenuItem>
           </ContextMenuContent>
@@ -240,6 +320,7 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
         )}
       </div>
 
+      {/* Dialog de création de dossier */}
       <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
         <DialogContent>
           <DialogHeader>
@@ -263,6 +344,60 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
             </Button>
             <Button onClick={handleCreateFolderSubmit}>
               Créer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de renommage */}
+      <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Renommer</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Nouveau nom"
+              value={newFolderName}
+              onChange={(e) => setNewFolderName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRenameSubmit()
+                }
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsRenameOpen(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleRenameSubmit}>
+              Renommer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de confirmation de suppression */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmer la suppression</DialogTitle>
+            <DialogDescription>
+              {selectedDocument?.type === 'folder' 
+                ? "Êtes-vous sûr de vouloir supprimer ce dossier et tout son contenu ?"
+                : "Êtes-vous sûr de vouloir supprimer ce fichier ?"}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)}>
+              Annuler
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDeleteSubmit}
+            >
+              Supprimer
             </Button>
           </DialogFooter>
         </DialogContent>

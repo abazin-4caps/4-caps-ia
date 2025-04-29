@@ -79,12 +79,32 @@ export async function updateDocument(id: string, document: Partial<Document>) {
 }
 
 export async function deleteDocument(id: string) {
-  const { error } = await supabase
+  // 1. Récupérer le document et ses enfants
+  const { data: doc, error: docError } = await supabase
+    .from('documents')
+    .select('*')
+    .eq('id', id)
+    .single()
+
+  if (docError) throw docError
+
+  // 2. Si c'est un fichier, supprimer le fichier du storage
+  if (doc.type === 'file' && doc.file_url) {
+    const filePath = `${doc.project_id}/${doc.id}/${doc.name}`
+    const { error: storageError } = await supabase.storage
+      .from('documents')
+      .remove([filePath])
+
+    if (storageError) throw storageError
+  }
+
+  // 3. Supprimer le document et tous ses enfants
+  const { error: deleteError } = await supabase
     .from('documents')
     .delete()
-    .eq('id', id)
+    .or(`id.eq.${id},path <@ '${doc.path}'`)
 
-  if (error) throw error
+  if (deleteError) throw deleteError
 }
 
 export async function uploadFile(file: File, projectId: string, parentId?: string) {
