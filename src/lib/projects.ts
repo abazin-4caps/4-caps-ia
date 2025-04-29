@@ -1,12 +1,11 @@
 import { supabase } from "@/lib/supabase"
-import { Project } from "@/types/project"
+import { Project } from "@/types"
 
 export async function getProjects(userId: string) {
   const { data, error } = await supabase
     .from('projects')
     .select('*')
     .eq('user_id', userId)
-    .order('created_at', { ascending: false })
 
   if (error) throw error
   return data as Project[]
@@ -22,7 +21,7 @@ export async function getProjectStats(userId: string) {
 
   const stats = {
     total: projects.length,
-    active: projects.filter(p => p.status === 'actif').length,
+    completed: projects.filter(p => p.status === 'terminé').length,
     inProgress: projects.filter(p => p.status === 'en_cours').length
   }
 
@@ -40,11 +39,11 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   return data as Project
 }
 
-export async function updateProject(projectId: number, updates: Partial<Project>) {
+export async function updateProject(id: number, project: Partial<Project>) {
   const { data, error } = await supabase
     .from('projects')
-    .update(updates)
-    .eq('id', projectId)
+    .update(project)
+    .eq('id', id)
     .select()
     .single()
 

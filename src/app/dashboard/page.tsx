@@ -4,24 +4,36 @@ import { DashboardHeader } from "@/components/dashboard/header"
 import { DashboardShell } from "@/components/dashboard/shell"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Building, CheckCircle, FileText } from "lucide-react"
+import { Building, CheckCircle, FileText, SortAsc } from "lucide-react"
 import { ProjectCard } from "@/components/dashboard/project-card"
 import { useEffect, useState } from "react"
 import { Project } from "@/types"
 import { getProjects, getProjectStats } from "@/lib/projects"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 interface ProjectStats {
   total: number
-  active: number
+  completed: number
   inProgress: number
 }
 
+type SortOption = "date" | "title" | "status"
+type FilterOption = "all" | "en_cours" | "terminé"
+
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
-  const [stats, setStats] = useState<ProjectStats>({ total: 0, active: 0, inProgress: 0 })
+  const [stats, setStats] = useState<ProjectStats>({ total: 0, completed: 0, inProgress: 0 })
   const [loading, setLoading] = useState(true)
+  const [sortBy, setSortBy] = useState<SortOption>("date")
+  const [filterStatus, setFilterStatus] = useState<FilterOption>("all")
   const router = useRouter()
 
   useEffect(() => {
@@ -50,6 +62,28 @@ export default function DashboardPage() {
     loadData()
   }, [router])
 
+  const sortProjects = (projects: Project[]) => {
+    return [...projects].sort((a, b) => {
+      switch (sortBy) {
+        case "date":
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        case "title":
+          return a.title.localeCompare(b.title)
+        case "status":
+          return a.status.localeCompare(b.status)
+        default:
+          return 0
+      }
+    })
+  }
+
+  const filterProjects = (projects: Project[]) => {
+    if (filterStatus === "all") return projects
+    return projects.filter(project => project.status === filterStatus)
+  }
+
+  const displayedProjects = sortProjects(filterProjects(projects))
+
   if (loading) {
     return (
       <DashboardShell>
@@ -74,7 +108,10 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
+        <Card 
+          className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white cursor-pointer"
+          onClick={() => setFilterStatus("all")}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
               <Building className="h-6 w-6 text-gray-600" />
@@ -85,18 +122,24 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
+        <Card 
+          className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white cursor-pointer"
+          onClick={() => setFilterStatus("terminé")}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-50 rounded-full">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <div className="text-sm font-medium text-gray-500">Projets actifs</div>
-              <div className="text-2xl font-bold">{stats.active}</div>
+              <div className="text-sm font-medium text-gray-500">Projets terminés</div>
+              <div className="text-2xl font-bold">{stats.completed}</div>
             </div>
           </div>
         </Card>
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
+        <Card 
+          className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white cursor-pointer"
+          onClick={() => setFilterStatus("en_cours")}
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-full">
               <FileText className="h-6 w-6 text-blue-600" />
@@ -109,14 +152,40 @@ export default function DashboardPage() {
         </Card>
       </div>
 
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex gap-4">
+          <Select value={filterStatus} onValueChange={(value: FilterOption) => setFilterStatus(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrer par statut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les projets</SelectItem>
+              <SelectItem value="en_cours">En cours</SelectItem>
+              <SelectItem value="terminé">Terminés</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Trier par" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="date">Date</SelectItem>
+              <SelectItem value="title">Titre</SelectItem>
+              <SelectItem value="status">Statut</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       <div className="grid gap-6 md:grid-cols-3">
-        {projects.map(project => (
+        {displayedProjects.map(project => (
           <ProjectCard key={project.id} project={project} />
         ))}
-        {projects.length === 0 && (
+        {displayedProjects.length === 0 && (
           <Card className="md:col-span-3 p-8 text-center text-gray-500 shadow-lg bg-white">
-            <p className="text-lg">Aucun projet pour le moment.</p>
-            <p className="mt-2">Créez votre premier projet !</p>
+            <p className="text-lg">Aucun projet ne correspond aux critères.</p>
+            <p className="mt-2">Modifiez vos filtres ou créez un nouveau projet.</p>
           </Card>
         )}
       </div>
