@@ -12,7 +12,7 @@ import { Calendar, MapPin, Pencil, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { updateProject } from "@/lib/projects"
+import { updateProject, deleteProject } from "@/lib/projects"
 import {
   Select,
   SelectContent,
@@ -27,6 +27,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [isEditing, setIsEditing] = useState(false)
   const [editedProject, setEditedProject] = useState<Partial<Project> | null>(null)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -63,11 +64,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       case 'actif':
         return 'bg-green-100 text-green-800'
       case 'en cours':
-        return 'bg-blue-100 text-blue-800'
+        return 'bg-green-100 text-green-800'
       case 'en pause':
         return 'bg-yellow-100 text-yellow-800'
       case 'terminé':
-        return 'bg-gray-100 text-gray-800'
+        return 'bg-blue-100 text-blue-800'
       default:
         return 'bg-gray-100 text-gray-800'
     }
@@ -90,6 +91,21 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const handleCancel = () => {
     setEditedProject(project)
     setIsEditing(false)
+  }
+
+  const handleDelete = async () => {
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce projet ?")) {
+      return
+    }
+    setDeleting(true)
+    try {
+      await deleteProject(Number(params.id))
+      router.push('/dashboard')
+    } catch (error) {
+      console.error('Error deleting project:', error)
+    } finally {
+      setDeleting(false)
+    }
   }
 
   if (loading) {
@@ -129,6 +145,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
               <Button 
                 onClick={handleSave}
                 disabled={saving}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Check className="h-4 w-4 mr-2" />
                 {saving ? "Enregistrement..." : "Enregistrer"}
@@ -138,16 +155,22 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             <>
               <Button 
                 variant="outline"
-                onClick={() => setIsEditing(true)}
-              >
-                <Pencil className="h-4 w-4 mr-2" />
-                Modifier
-              </Button>
-              <Button 
-                variant="outline"
                 onClick={() => router.push('/dashboard')}
               >
                 Retour aux projets
+              </Button>
+              <Button 
+                onClick={() => setIsEditing(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Modifier
+              </Button>
+              <Button 
+                onClick={handleDelete}
+                disabled={deleting}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                {deleting ? "Suppression..." : "Supprimer"}
               </Button>
             </>
           )}
@@ -218,7 +241,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="actif">Actif</SelectItem>
-                    <SelectItem value="en_cours">En cours</SelectItem>
+                    <SelectItem value="en cours">En cours</SelectItem>
                     <SelectItem value="terminé">Terminé</SelectItem>
                   </SelectContent>
                 </Select>
