@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { useEffect, useState } from "react"
 
 export function DashboardShell({
   children
@@ -17,6 +18,19 @@ export function DashboardShell({
   children: React.ReactNode
 }) {
   const router = useRouter()
+  const [userInitials, setUserInitials] = useState("")
+
+  useEffect(() => {
+    async function getUserInitials() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.user_metadata?.full_name) {
+        const names = user.user_metadata.full_name.split(' ')
+        const initials = names.map((name: string) => name[0]).join('')
+        setUserInitials(initials)
+      }
+    }
+    getUserInitials()
+  }, [])
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
@@ -46,10 +60,10 @@ export function DashboardShell({
                     variant="outline"
                     className="h-8 w-8 rounded-full p-0 hover:bg-slate-100"
                   >
-                    <span className="font-semibold">AB</span>
+                    <span className="font-semibold">{userInitials}</span>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuContent align="end" className="w-40 bg-white">
                   <DropdownMenuItem onClick={() => router.push('/dashboard')}>
                     Mes projets
                   </DropdownMenuItem>
