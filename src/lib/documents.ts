@@ -1,6 +1,16 @@
 import { supabase } from "@/lib/supabase"
 import { Document } from "@/types/document"
 
+// Fonction utilitaire pour sanitizer les chemins ltree
+function sanitizeLtreePath(path: string): string {
+  return path
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_|_$/g, '')
+    .replace(/^[0-9]/, 'n$&')
+}
+
 export async function getProjectDocuments(projectId: string) {
   const { data, error } = await supabase
     .from('documents')
@@ -43,12 +53,7 @@ export async function createDocument(document: Omit<Document, 'id' | 'created_at
   if (!user) throw new Error('User not authenticated')
 
   // Sanitize le nom pour le path ltree
-  let sanitizedName = document.name
-    .toLowerCase()
-    .replace(/[^a-z0-9]/g, '_') // Remplace tous les caractères non alphanumériques par _
-    .replace(/_+/g, '_')        // Remplace les séquences de _ par un seul _
-    .replace(/^_|_$/g, '')      // Supprime les _ au début et à la fin
-    .replace(/^[0-9]/, 'n$&')   // Ajoute 'n' devant si ça commence par un chiffre
+  let sanitizedName = sanitizeLtreePath(document.name)
 
   // Si le nom est vide après sanitization, utiliser un fallback
   if (!sanitizedName) {
@@ -67,6 +72,8 @@ export async function createDocument(document: Omit<Document, 'id' | 'created_at
     if (parent) {
       path = `${parent.path}.${sanitizedName}`
     }
+  } else {
+    path = `root.${sanitizedName}`
   }
 
   const { data, error } = await supabase
@@ -112,12 +119,12 @@ export async function deleteDocument(id: string) {
       if (storageError) throw storageError
     }
 
-    // 3. Récupérer tous les documents enfants
+    // 3. Récupérer tous les documents enfants en utilisant une requête SQL native
     const { data: children, error: childrenError } = await supabase
       .from('documents')
       .select('id')
       .eq('project_id', doc.project_id)
-      .match({ path: `${doc.path}.*` })
+      .like('path', `${doc.path}%`)
 
     if (childrenError) throw childrenError
 
@@ -139,6 +146,8 @@ export async function deleteDocument(id: string) {
       .eq('id', id)
 
     if (deleteError) throw deleteError
+
+    return true
   } catch (error) {
     console.error('Error in deleteDocument:', error)
     throw error
@@ -163,7 +172,6 @@ export async function uploadFile(file: File, projectId: string, parentId?: strin
       const extension = ext !== -1 ? file.name.slice(ext) : ''
       let counter = 1
       
-      // Essayer avec des suffixes (1), (2), etc. jusqu'à trouver un nom unique
       while (existingFiles.some(f => f.name === uniqueName)) {
         uniqueName = `${baseName} (${counter})${extension}`
         counter++
@@ -195,11 +203,11 @@ export async function uploadFile(file: File, projectId: string, parentId?: strin
       .from('documents')
       .getPublicUrl(filePath)
 
-    await updateDocument(document.id, {
+    const updatedDoc = await updateDocument(document.id, {
       file_url: publicUrl
     })
 
-    return document
+    return updatedDoc
   } catch (error) {
     console.error('Error uploading file:', error)
     throw error

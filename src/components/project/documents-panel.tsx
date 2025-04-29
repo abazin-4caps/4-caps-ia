@@ -173,20 +173,64 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
       if (!files || files.length === 0) return
 
       setUploading(true)
+      let hasErrors = false
+      
       try {
         for (const file of Array.from(files)) {
-          await uploadFile(file, projectId, parentId)
+          try {
+            const doc = await uploadFile(file, projectId, parentId)
+            if (doc) {
+              // Mettre à jour l'état local immédiatement
+              setDocuments(prevDocs => {
+                const newDocs = [...prevDocs]
+                if (parentId) {
+                  // Ajouter à un dossier parent
+                  const updateChildren = (docs: Document[]) => {
+                    for (const d of docs) {
+                      if (d.id === parentId) {
+                        d.children = [...(d.children || []), doc]
+                        return true
+                      }
+                      if (d.children && updateChildren(d.children)) {
+                        return true
+                      }
+                    }
+                    return false
+                  }
+                  updateChildren(newDocs)
+                } else {
+                  // Ajouter à la racine
+                  newDocs.push(doc)
+                }
+                return newDocs
+              })
+              
+              toast({
+                title: "Succès",
+                description: `${file.name} a été importé avec succès`
+              })
+            }
+          } catch (error) {
+            console.error(`Error uploading ${file.name}:`, error)
+            hasErrors = true
+          }
+        }
+        
+        // Recharger la liste complète après tous les uploads
+        await loadDocuments()
+        
+        if (hasErrors) {
           toast({
-            title: "Succès",
-            description: `${file.name} a été importé avec succès`
+            title: "Attention",
+            description: "Certains fichiers n'ont pas pu être importés",
+            variant: "destructive"
           })
         }
-        await loadDocuments()
       } catch (error) {
-        console.error('Error importing files:', error)
+        console.error('Error in import process:', error)
         toast({
           title: "Erreur",
-          description: "Impossible d'importer certains fichiers",
+          description: "Une erreur est survenue pendant l'import",
           variant: "destructive"
         })
       } finally {
