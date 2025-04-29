@@ -4,6 +4,7 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import { cn } from "@/lib/utils"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,11 +13,15 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { UserNav } from "./user-nav"
 
-export function DashboardShell({
-  children
-}: {
+interface DashboardShellProps {
   children: React.ReactNode
-}) {
+  className?: string
+}
+
+export function DashboardShell({
+  children,
+  className
+}: DashboardShellProps) {
   const router = useRouter()
 
   return (
@@ -43,7 +48,7 @@ export function DashboardShell({
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className={cn("max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8", className)}>
         {children}
       </main>
     </div>
