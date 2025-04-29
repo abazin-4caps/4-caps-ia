@@ -42,10 +42,10 @@ export function UserNav() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0 hover:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0">
           <Avatar className="h-8 w-8">
             <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name || user.email} />
-            <AvatarFallback className="bg-blue-600">
+            <AvatarFallback className="bg-blue-600 transition-colors hover:bg-blue-700">
               <span className="sr-only">Menu utilisateur</span>
               <UserIcon className="h-4 w-4 text-white" />
             </AvatarFallback>
