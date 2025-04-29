@@ -4,6 +4,12 @@ import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { supabase } from "@/lib/supabase"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function DashboardShell({
   children
@@ -27,25 +33,34 @@ export function DashboardShell({
               <Image
                 src="/LOGO 4 CAPS IA.png"
                 alt="4 CAPS IA logo"
-                width={120}
-                height={25}
+                width={80}
+                height={17}
                 priority
+                className="object-contain"
               />
             </div>
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                className="text-gray-600 hover:text-gray-900"
-                onClick={() => router.push('/profile')}
-              >
-                Mon compte
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleSignOut}
-              >
-                Déconnexion
-              </Button>
+            <div className="flex items-center">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="h-8 w-8 rounded-full p-0 hover:bg-slate-100"
+                  >
+                    <span className="font-semibold">AB</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem onClick={() => router.push('/dashboard')}>
+                    Mes projets
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => router.push('/profile')}>
+                    Mon compte
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    Déconnexion
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>
