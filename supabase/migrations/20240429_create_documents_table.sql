@@ -6,7 +6,7 @@ create table documents (
   name text not null,
   type text not null check (type in ('file', 'folder')),
   parent_id uuid references documents(id),
-  project_id uuid references projects(id) not null,
+  project_id bigint references projects(id) not null,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null,
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   created_by uuid references auth.users(id) not null,
@@ -85,4 +85,20 @@ $$ language plpgsql;
 create trigger update_documents_updated_at
   before update on documents
   for each row
-  execute function update_updated_at_column(); 
+  execute function update_updated_at_column();
+
+-- Create initial folders structure for existing projects
+insert into documents (
+  name,
+  type,
+  project_id,
+  created_by,
+  path
+)
+select 
+  'Documents',
+  'folder',
+  id as project_id,
+  user_id as created_by,
+  'root'::ltree as path
+from projects; 
