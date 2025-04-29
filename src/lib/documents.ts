@@ -79,42 +79,57 @@ export async function updateDocument(id: string, document: Partial<Document>) {
 }
 
 export async function deleteDocument(id: string) {
-  // 1. Récupérer le document et ses enfants
-  const { data: doc, error: docError } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('id', id)
-    .single()
-
-  if (docError) throw docError
-
-  // 2. Si c'est un fichier, supprimer le fichier du storage
-  if (doc.type === 'file' && doc.file_url) {
-    const filePath = `${doc.project_id}/${doc.id}/${doc.name}`
-    const { error: storageError } = await supabase.storage
+  try {
+    // 1. Récupérer le document
+    const { data: doc, error: docError } = await supabase
       .from('documents')
-      .remove([filePath])
+      .select('*')
+      .eq('id', id)
+      .single()
 
-    if (storageError) throw storageError
+    if (docError) throw docError
+
+    // 2. Si c'est un fichier, supprimer le fichier du storage
+    if (doc.type === 'file' && doc.file_url) {
+      const filePath = `${doc.project_id}/${doc.id}/${doc.name}`
+      const { error: storageError } = await supabase.storage
+        .from('documents')
+        .remove([filePath])
+
+      if (storageError) throw storageError
+    }
+
+    // 3. Récupérer tous les documents enfants
+    const { data: children, error: childrenError } = await supabase
+      .from('documents')
+      .select('id')
+      .eq('project_id', doc.project_id)
+      .filter('path', 'like', `${doc.path}.%`)
+
+    if (childrenError) throw childrenError
+
+    // 4. Supprimer les enfants s'il y en a
+    if (children && children.length > 0) {
+      const childrenIds = children.map(child => child.id)
+      const { error: deleteChildrenError } = await supabase
+        .from('documents')
+        .delete()
+        .in('id', childrenIds)
+
+      if (deleteChildrenError) throw deleteChildrenError
+    }
+
+    // 5. Supprimer le document lui-même
+    const { error: deleteError } = await supabase
+      .from('documents')
+      .delete()
+      .eq('id', id)
+
+    if (deleteError) throw deleteError
+  } catch (error) {
+    console.error('Error in deleteDocument:', error)
+    throw error
   }
-
-  // 3. D'abord supprimer les enfants
-  const { error: deleteChildrenError } = await supabase
-    .from('documents')
-    .delete()
-    .neq('id', id)
-    .eq('project_id', doc.project_id)
-    .contains('path', [doc.path])
-
-  if (deleteChildrenError) throw deleteChildrenError
-
-  // 4. Ensuite supprimer le document lui-même
-  const { error: deleteError } = await supabase
-    .from('documents')
-    .delete()
-    .eq('id', id)
-
-  if (deleteError) throw deleteError
 }
 
 export async function uploadFile(file: File, projectId: string, parentId?: string) {
