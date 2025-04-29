@@ -26,7 +26,7 @@ interface ProjectStats {
 }
 
 type SortOption = "date" | "title" | "status"
-type FilterOption = "all" | "en_cours" | "terminé"
+type FilterOption = "all" | "en cours" | "terminé"
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -138,7 +138,7 @@ export default function DashboardPage() {
         </Card>
         <Card 
           className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white cursor-pointer"
-          onClick={() => setFilterStatus("en_cours")}
+          onClick={() => setFilterStatus("en cours")}
         >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-full">
@@ -168,7 +168,7 @@ export default function DashboardPage() {
               Tous les projets
             </SelectItem>
             <SelectItem 
-              value="en_cours"
+              value="en cours"
               className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
             >
               En cours

@@ -34,7 +34,7 @@ export default function NewProject() {
         title,
         description,
         address,
-        status: 'en_cours',
+        status: 'en cours',
         user_id: user.id
       })
 

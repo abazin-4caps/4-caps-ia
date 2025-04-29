@@ -8,7 +8,7 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin, Pencil, X, Check } from "lucide-react"
+import { Calendar, MapPin, Pencil, X, Check, FolderOpen } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -158,6 +158,13 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
                 onClick={() => router.push('/dashboard')}
               >
                 Retour aux projets
+              </Button>
+              <Button 
+                onClick={() => router.push(`/projects/${params.id}/view`)}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Ouvrir
               </Button>
               <Button 
                 onClick={() => setIsEditing(true)}
