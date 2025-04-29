@@ -147,16 +147,39 @@ export async function deleteDocument(id: string) {
 
 export async function uploadFile(file: File, projectId: string, parentId?: string) {
   try {
+    // Vérifier si un fichier avec le même nom existe déjà
+    const { data: existingFiles } = await supabase
+      .from('documents')
+      .select('name')
+      .eq('project_id', projectId)
+      .eq('parent_id', parentId || null)
+      .eq('type', 'file')
+
+    // Générer un nom unique si nécessaire
+    let uniqueName = file.name
+    if (existingFiles?.some(f => f.name === file.name)) {
+      const ext = file.name.lastIndexOf('.')
+      const baseName = ext !== -1 ? file.name.slice(0, ext) : file.name
+      const extension = ext !== -1 ? file.name.slice(ext) : ''
+      let counter = 1
+      
+      // Essayer avec des suffixes (1), (2), etc. jusqu'à trouver un nom unique
+      while (existingFiles.some(f => f.name === uniqueName)) {
+        uniqueName = `${baseName} (${counter})${extension}`
+        counter++
+      }
+    }
+
     // 1. Créer l'entrée dans la table documents
     const document = await createDocument({
-      name: file.name,
+      name: uniqueName,
       type: 'file',
       project_id: projectId,
       parent_id: parentId
     })
 
     // 2. Upload le fichier dans le bucket
-    const filePath = `${projectId}/${document.id}/${file.name}`
+    const filePath = `${projectId}/${document.id}/${uniqueName}`
     const { error: uploadError } = await supabase.storage
       .from('documents')
       .upload(filePath, file)
