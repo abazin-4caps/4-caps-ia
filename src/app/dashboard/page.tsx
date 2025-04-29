@@ -60,50 +60,63 @@ export default function DashboardPage() {
 
   return (
     <DashboardShell>
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-8">
         <DashboardHeader
           heading="Mes projets"
           text="Gérez vos projets immobiliers."
         />
         <Button 
-          className="bg-blue-500 hover:bg-blue-600"
+          className="bg-blue-600 hover:bg-blue-700 text-white"
           onClick={() => router.push('/projects/new')}
         >
           Nouveau projet
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3 mt-6">
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <Building className="h-5 w-5 text-gray-500" />
-            <div className="text-sm text-gray-500">Total des projets</div>
+      <div className="grid gap-6 md:grid-cols-3 mb-8">
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gray-100 rounded-full">
+              <Building className="h-6 w-6 text-gray-600" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-gray-500">Total des projets</div>
+              <div className="text-2xl font-bold">{stats.total}</div>
+            </div>
           </div>
-          <div className="mt-3 text-2xl font-bold">{stats.total}</div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <CheckCircle className="h-5 w-5 text-green-500" />
-            <div className="text-sm text-gray-500">Projets actifs</div>
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-green-50 rounded-full">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-gray-500">Projets actifs</div>
+              <div className="text-2xl font-bold">{stats.active}</div>
+            </div>
           </div>
-          <div className="mt-3 text-2xl font-bold">{stats.active}</div>
         </Card>
-        <Card className="p-4">
-          <div className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-blue-500" />
-            <div className="text-sm text-gray-500">Projets en cours</div>
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 rounded-full">
+              <FileText className="h-6 w-6 text-blue-600" />
+            </div>
+            <div>
+              <div className="text-sm font-medium text-gray-500">Projets en cours</div>
+              <div className="text-2xl font-bold">{stats.inProgress}</div>
+            </div>
           </div>
-          <div className="mt-3 text-2xl font-bold">{stats.inProgress}</div>
         </Card>
       </div>
 
-      <div className="mt-6 space-y-4">
+      <div className="grid gap-6 md:grid-cols-3">
         {projects.map(project => (
           <ProjectCard key={project.id} project={project} />
         ))}
         {projects.length === 0 && (
-          <Card className="p-8 text-center text-gray-500">
-            Aucun projet pour le moment. Créez votre premier projet !
+          <Card className="md:col-span-3 p-8 text-center text-gray-500 shadow-lg">
+            <p className="text-lg">Aucun projet pour le moment.</p>
+            <p className="mt-2">Créez votre premier projet !</p>
           </Card>
         )}
       </div>
