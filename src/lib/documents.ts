@@ -38,6 +38,10 @@ export async function getProjectDocuments(projectId: string) {
 }
 
 export async function createDocument(document: Omit<Document, 'id' | 'created_at' | 'updated_at' | 'path'>) {
+  // Récupérer l'utilisateur connecté
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('User not authenticated')
+
   // Construire le path ltree
   let path = document.name.toLowerCase().replace(/\s+/g, '_')
   if (document.parent_id) {
@@ -54,7 +58,7 @@ export async function createDocument(document: Omit<Document, 'id' | 'created_at
 
   const { data, error } = await supabase
     .from('documents')
-    .insert([{ ...document, path }])
+    .insert([{ ...document, path, created_by: user.id }])
     .select()
     .single()
 
