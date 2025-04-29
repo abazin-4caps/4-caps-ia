@@ -6,11 +6,10 @@ import { useEffect, useState } from "react"
 import { Project } from "@/types"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
-import { Card } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { FolderTree, FileText, MessageSquareText } from "lucide-react"
+import { FileText, MessageSquareText } from "lucide-react"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import { DocumentsPanel } from "@/components/project/documents-panel"
 
 export default function ProjectViewPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null)
@@ -79,15 +78,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
       <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
         {/* Panneau Documents */}
         <ResizablePanel defaultSize={20}>
-          <div className="h-full border-r p-4">
-            <div className="flex items-center gap-2 mb-4">
-              <FolderTree className="h-5 w-5" />
-              <h2 className="font-semibold">Documents</h2>
-            </div>
-            <div className="text-sm text-gray-500">
-              L'arborescence des documents sera bientôt disponible.
-            </div>
-          </div>
+          <DocumentsPanel projectId={params.id} />
         </ResizablePanel>
         
         <ResizableHandle />
