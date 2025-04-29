@@ -4,8 +4,7 @@ import Link from "next/link"
 
 export function RegisterForm() {
   return (
-    <div className="w-full max-w-sm p-6 bg-card rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-center mb-6">Inscription</h2>
+    <div className="auth-card">
       <form className="space-y-4">
         <div className="space-y-2">
           <label htmlFor="name" className="text-sm font-medium">
