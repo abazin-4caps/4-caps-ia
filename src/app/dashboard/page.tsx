@@ -74,7 +74,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-3 mb-8">
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gray-100 rounded-full">
               <Building className="h-6 w-6 text-gray-600" />
@@ -85,7 +85,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-50 rounded-full">
               <CheckCircle className="h-6 w-6 text-green-600" />
@@ -96,7 +96,7 @@ export default function DashboardPage() {
             </div>
           </div>
         </Card>
-        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow">
+        <Card className="p-6 shadow-lg hover:shadow-xl transition-shadow bg-white">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-full">
               <FileText className="h-6 w-6 text-blue-600" />
@@ -114,7 +114,7 @@ export default function DashboardPage() {
           <ProjectCard key={project.id} project={project} />
         ))}
         {projects.length === 0 && (
-          <Card className="md:col-span-3 p-8 text-center text-gray-500 shadow-lg">
+          <Card className="md:col-span-3 p-8 text-center text-gray-500 shadow-lg bg-white">
             <p className="text-lg">Aucun projet pour le moment.</p>
             <p className="mt-2">Créez votre premier projet !</p>
           </Card>

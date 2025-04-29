@@ -30,7 +30,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
 
   return (
     <Card 
-      className="p-6 shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+      className="p-6 shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-white"
       onClick={() => router.push(`/projects/${project.id}`)}
     >
       <div className="space-y-4">
