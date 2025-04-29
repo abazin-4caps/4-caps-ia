@@ -52,7 +52,7 @@ export function UserNav() {
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end" forceMount>
+      <DropdownMenuContent className="w-56 bg-white" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium leading-none">
@@ -65,15 +65,24 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            Profil
+          <DropdownMenuItem 
+            onClick={() => router.push('/dashboard')}
+            className="cursor-pointer hover:bg-slate-100 active:bg-slate-200 transition-colors focus:bg-slate-100"
+          >
+            Mes projets
           </DropdownMenuItem>
-          <DropdownMenuItem>
-            Paramètres
+          <DropdownMenuItem 
+            onClick={() => router.push('/profile')}
+            className="cursor-pointer hover:bg-slate-100 active:bg-slate-200 transition-colors focus:bg-slate-100"
+          >
+            Mon compte
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
+        <DropdownMenuItem 
+          onClick={handleSignOut}
+          className="cursor-pointer hover:bg-slate-100 active:bg-slate-200 transition-colors focus:bg-slate-100"
+        >
           Se déconnecter
         </DropdownMenuItem>
       </DropdownMenuContent>
