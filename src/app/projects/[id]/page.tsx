@@ -8,12 +8,25 @@ import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, MapPin } from "lucide-react"
+import { Calendar, MapPin, Pencil, X, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { updateProject } from "@/lib/projects"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editedProject, setEditedProject] = useState<Partial<Project> | null>(null)
+  const [saving, setSaving] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -33,6 +46,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
         if (error) throw error
         setProject(data)
+        setEditedProject(data)
       } catch (error) {
         console.error('Error loading project:', error)
         router.push('/dashboard')
@@ -59,6 +73,25 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     }
   }
 
+  const handleSave = async () => {
+    if (!project || !editedProject) return
+    setSaving(true)
+    try {
+      const updatedProject = await updateProject(project.id, editedProject)
+      setProject(updatedProject)
+      setIsEditing(false)
+    } catch (error) {
+      console.error('Error updating project:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancel = () => {
+    setEditedProject(project)
+    setIsEditing(false)
+  }
+
   if (loading) {
     return (
       <DashboardShell>
@@ -67,7 +100,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     )
   }
 
-  if (!project) {
+  if (!project || !editedProject) {
     return (
       <DashboardShell>
         <div>Projet non trouvé</div>
@@ -82,41 +115,138 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           heading={project.title}
           text="Détails du projet"
         />
-        <Button 
-          variant="outline"
-          onClick={() => router.push('/dashboard')}
-        >
-          Retour aux projets
-        </Button>
+        <div className="flex gap-2">
+          {isEditing ? (
+            <>
+              <Button 
+                variant="outline" 
+                onClick={handleCancel}
+                disabled={saving}
+              >
+                <X className="h-4 w-4 mr-2" />
+                Annuler
+              </Button>
+              <Button 
+                onClick={handleSave}
+                disabled={saving}
+              >
+                <Check className="h-4 w-4 mr-2" />
+                {saving ? "Enregistrement..." : "Enregistrer"}
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+              >
+                <Pencil className="h-4 w-4 mr-2" />
+                Modifier
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/dashboard')}
+              >
+                Retour aux projets
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <Card className="p-6 bg-white">
         <div className="space-y-6">
           <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
-              <div className="flex items-center text-sm text-gray-500 gap-4">
-                <div className="flex items-center gap-1">
-                  <MapPin className="h-4 w-4" />
-                  <span>{project.address}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4" />
-                  <span>{new Date(project.created_at).toLocaleDateString('fr-FR')}</span>
-                </div>
-              </div>
+            <div className="space-y-4 flex-1 mr-4">
+              {isEditing ? (
+                <>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 mb-1 block">
+                      Titre
+                    </label>
+                    <Input
+                      value={editedProject.title}
+                      onChange={(e) => setEditedProject({
+                        ...editedProject,
+                        title: e.target.value
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-500 mb-1 block">
+                      Adresse
+                    </label>
+                    <Input
+                      value={editedProject.address}
+                      onChange={(e) => setEditedProject({
+                        ...editedProject,
+                        address: e.target.value
+                      })}
+                    />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="text-xl font-semibold mb-2">{project.title}</h2>
+                  <div className="flex items-center text-sm text-gray-500 gap-4">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      <span>{project.address}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-4 w-4" />
+                      <span>{new Date(project.created_at).toLocaleDateString('fr-FR')}</span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-            <Badge className={getStatusColor(project.status)}>
-              {project.status}
-            </Badge>
+            {isEditing ? (
+              <div>
+                <label className="text-sm font-medium text-gray-500 mb-1 block">
+                  Statut
+                </label>
+                <Select
+                  value={editedProject.status}
+                  onValueChange={(value: string) => setEditedProject({
+                    ...editedProject,
+                    status: value as Project['status']
+                  })}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sélectionner un statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="actif">Actif</SelectItem>
+                    <SelectItem value="en_cours">En cours</SelectItem>
+                    <SelectItem value="terminé">Terminé</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <Badge className={getStatusColor(project.status)}>
+                {project.status}
+              </Badge>
+            )}
           </div>
 
-          {project.description && (
-            <div>
-              <h3 className="text-sm font-medium text-gray-500 mb-2">Description</h3>
+          <div>
+            <label className="text-sm font-medium text-gray-500 mb-2 block">
+              Description
+            </label>
+            {isEditing ? (
+              <Textarea
+                value={editedProject.description}
+                onChange={(e) => setEditedProject({
+                  ...editedProject,
+                  description: e.target.value
+                })}
+                className="min-h-[100px]"
+              />
+            ) : (
               <p className="text-gray-700">{project.description}</p>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </Card>
     </DashboardShell>

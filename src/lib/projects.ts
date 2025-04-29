@@ -40,11 +40,11 @@ export async function createProject(project: Omit<Project, 'id' | 'created_at' |
   return data as Project
 }
 
-export async function updateProject(id: number, updates: Partial<Project>) {
+export async function updateProject(projectId: number, updates: Partial<Project>) {
   const { data, error } = await supabase
     .from('projects')
     .update(updates)
-    .eq('id', id)
+    .eq('id', projectId)
     .select()
     .single()
 
