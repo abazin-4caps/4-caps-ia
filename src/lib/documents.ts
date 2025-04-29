@@ -117,7 +117,7 @@ export async function deleteDocument(id: string) {
       .from('documents')
       .select('id')
       .eq('project_id', doc.project_id)
-      .filter('path', '~', `${doc.path}.*`)
+      .match({ path: `${doc.path}.*` })
 
     if (childrenError) throw childrenError
 
