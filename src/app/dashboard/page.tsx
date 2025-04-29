@@ -154,30 +154,60 @@ export default function DashboardPage() {
 
       <div className="flex gap-4 mb-6">
         <Select value={filterStatus} onValueChange={(value: FilterOption) => setFilterStatus(value)}>
-          <SelectTrigger className="w-[140px] bg-white">
+          <SelectTrigger className="w-[140px] bg-white hover:bg-slate-100 transition-colors">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="h-4 w-4" />
               <span>Filtres</span>
             </div>
           </SelectTrigger>
           <SelectContent className="bg-white">
-            <SelectItem value="all">Tous les projets</SelectItem>
-            <SelectItem value="en_cours">En cours</SelectItem>
-            <SelectItem value="terminé">Terminés</SelectItem>
+            <SelectItem 
+              value="all" 
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              Tous les projets
+            </SelectItem>
+            <SelectItem 
+              value="en_cours"
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              En cours
+            </SelectItem>
+            <SelectItem 
+              value="terminé"
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              Terminés
+            </SelectItem>
           </SelectContent>
         </Select>
 
         <Select value={sortBy} onValueChange={(value: SortOption) => setSortBy(value)}>
-          <SelectTrigger className="w-[140px] bg-white">
+          <SelectTrigger className="w-[140px] bg-white hover:bg-slate-100 transition-colors">
             <div className="flex items-center gap-2">
               <ArrowUpDown className="h-4 w-4" />
               <span>Trier par</span>
             </div>
           </SelectTrigger>
           <SelectContent className="bg-white">
-            <SelectItem value="date">Date</SelectItem>
-            <SelectItem value="title">Titre</SelectItem>
-            <SelectItem value="status">Statut</SelectItem>
+            <SelectItem 
+              value="date"
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              Date
+            </SelectItem>
+            <SelectItem 
+              value="title"
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              Titre
+            </SelectItem>
+            <SelectItem 
+              value="status"
+              className="hover:bg-slate-100 transition-colors cursor-pointer focus:bg-slate-100"
+            >
+              Statut
+            </SelectItem>
           </SelectContent>
         </Select>
       </div>
