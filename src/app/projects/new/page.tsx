@@ -55,9 +55,9 @@ export default function NewProject() {
     <DashboardShell>
       <DashboardHeader
         heading="Nouveau projet"
-        text="Créez un nouveau projet immobilier."
+        text="Ajoutez un nouveau projet à votre portefeuille."
       />
-      <div className="grid gap-6">
+      <div className="grid gap-6 mt-6">
         <form onSubmit={handleSubmit}>
           {error && (
             <div className="bg-red-50 text-red-500 p-3 rounded-md text-sm mb-4">

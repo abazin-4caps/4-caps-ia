@@ -62,7 +62,7 @@ export default function DashboardPage() {
     <DashboardShell>
       <div className="flex items-center justify-between">
         <DashboardHeader
-          heading="Projets immobiliers"
+          heading="Mes projets"
           text="Gérez vos projets immobiliers."
         />
         <Button 
@@ -73,7 +73,7 @@ export default function DashboardPage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-3 mt-6">
         <Card className="p-4">
           <div className="flex items-center gap-2">
             <Building className="h-5 w-5 text-gray-500" />
@@ -97,7 +97,7 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-6 space-y-4">
         {projects.map(project => (
           <ProjectCard key={project.id} project={project} />
         ))}
