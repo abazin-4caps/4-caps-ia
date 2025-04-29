@@ -9,7 +9,8 @@ import { useRouter } from "next/navigation"
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { FolderTree, FileText, MessageSquareText } from "lucide-react"
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
 
 export default function ProjectViewPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null)
@@ -61,8 +62,8 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <DashboardShell>
-      <div className="flex items-center justify-between mb-8">
+    <DashboardShell className="p-0">
+      <div className="flex items-center justify-between p-4 border-b">
         <DashboardHeader
           heading={project.title}
           text={project.address}
@@ -75,50 +76,50 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         </Button>
       </div>
 
-      <Tabs defaultValue="details" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="details">Détails</TabsTrigger>
-          <TabsTrigger value="documents">Documents</TabsTrigger>
-          <TabsTrigger value="ia">Intelligence Artificielle</TabsTrigger>
-        </TabsList>
-        <TabsContent value="details">
-          <Card className="p-6">
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Description</h3>
-                <p className="text-gray-700">{project.description}</p>
-              </div>
-              <div>
-                <h3 className="text-lg font-semibold mb-2">Informations</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Statut</p>
-                    <Badge className="mt-1">{project.status}</Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-500">Date de création</p>
-                    <p className="mt-1">{new Date(project.created_at).toLocaleDateString('fr-FR')}</p>
-                  </div>
-                </div>
-              </div>
+      <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+        {/* Panneau Documents */}
+        <ResizablePanel defaultSize={20}>
+          <div className="h-full border-r p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <FolderTree className="h-5 w-5" />
+              <h2 className="font-semibold">Documents</h2>
             </div>
-          </Card>
-        </TabsContent>
-        <TabsContent value="documents">
-          <Card className="p-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">La gestion des documents sera bientôt disponible.</p>
+            <div className="text-sm text-gray-500">
+              L'arborescence des documents sera bientôt disponible.
             </div>
-          </Card>
-        </TabsContent>
-        <TabsContent value="ia">
-          <Card className="p-6">
-            <div className="text-center py-8">
-              <p className="text-gray-500">Les fonctionnalités d'IA seront bientôt disponibles.</p>
+          </div>
+        </ResizablePanel>
+        
+        <ResizableHandle />
+
+        {/* Panneau Visionneuse */}
+        <ResizablePanel defaultSize={50}>
+          <div className="h-full border-r p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <FileText className="h-5 w-5" />
+              <h2 className="font-semibold">Visionneuse</h2>
             </div>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            <div className="text-sm text-gray-500">
+              La visionneuse de documents sera bientôt disponible.
+            </div>
+          </div>
+        </ResizablePanel>
+
+        <ResizableHandle />
+
+        {/* Panneau IA */}
+        <ResizablePanel defaultSize={30}>
+          <div className="h-full p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <MessageSquareText className="h-5 w-5" />
+              <h2 className="font-semibold">Intelligence Artificielle</h2>
+            </div>
+            <div className="text-sm text-gray-500">
+              Le chat avec l'IA sera bientôt disponible.
+            </div>
+          </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </DashboardShell>
   )
 } 
