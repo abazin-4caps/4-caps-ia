@@ -11,6 +11,7 @@ create table documents (
   updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
   created_by uuid references auth.users(id) not null,
   path ltree not null,
+  file_url text,
   constraint unique_name_in_folder unique (parent_id, name, project_id)
 );
 
@@ -86,6 +87,18 @@ create trigger update_documents_updated_at
   before update on documents
   for each row
   execute function update_updated_at_column();
+
+-- Function to get document children
+create or replace function get_document_children(parent_path ltree)
+returns setof documents as $$
+begin
+  return query
+  select *
+  from documents
+  where path <@ parent_path
+  and path != parent_path;
+end;
+$$ language plpgsql;
 
 -- Create initial folders structure for existing projects
 insert into documents (

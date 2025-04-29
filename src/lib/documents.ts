@@ -121,10 +121,7 @@ export async function deleteDocument(id: string) {
 
     // 3. Récupérer tous les documents enfants en utilisant une requête SQL native
     const { data: children, error: childrenError } = await supabase
-      .from('documents')
-      .select('id')
-      .eq('project_id', doc.project_id)
-      .like('path', `${doc.path}%`)
+      .rpc('get_document_children', { parent_path: doc.path })
 
     if (childrenError) throw childrenError
 
