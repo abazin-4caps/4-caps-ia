@@ -42,8 +42,21 @@ export async function createDocument(document: Omit<Document, 'id' | 'created_at
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error('User not authenticated')
 
+  // Sanitize le nom pour le path ltree
+  let sanitizedName = document.name
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '_') // Remplace tous les caractères non alphanumériques par _
+    .replace(/_+/g, '_')        // Remplace les séquences de _ par un seul _
+    .replace(/^_|_$/g, '')      // Supprime les _ au début et à la fin
+    .replace(/^[0-9]/, 'n$&')   // Ajoute 'n' devant si ça commence par un chiffre
+
+  // Si le nom est vide après sanitization, utiliser un fallback
+  if (!sanitizedName) {
+    sanitizedName = 'document_' + Date.now()
+  }
+
   // Construire le path ltree
-  let path = document.name.toLowerCase().replace(/\s+/g, '_')
+  let path = sanitizedName
   if (document.parent_id) {
     const { data: parent } = await supabase
       .from('documents')
@@ -52,7 +65,7 @@ export async function createDocument(document: Omit<Document, 'id' | 'created_at
       .single()
     
     if (parent) {
-      path = `${parent.path}.${path}`
+      path = `${parent.path}.${sanitizedName}`
     }
   }
 
@@ -104,7 +117,7 @@ export async function deleteDocument(id: string) {
       .from('documents')
       .select('id')
       .eq('project_id', doc.project_id)
-      .filter('path', 'like', `${doc.path}.%`)
+      .filter('path', 'like', `${doc.path}.*`)
 
     if (childrenError) throw childrenError
 
