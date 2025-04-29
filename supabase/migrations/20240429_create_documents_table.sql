@@ -1,3 +1,9 @@
+-- Supprimer les objets existants
+drop trigger if exists update_documents_updated_at on documents;
+drop function if exists update_updated_at_column() cascade;
+drop function if exists get_document_children(ltree) cascade;
+drop table if exists documents cascade;
+
 -- Enable the ltree extension for hierarchical data
 create extension if not exists ltree;
 
