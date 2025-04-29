@@ -102,7 +102,8 @@ export async function deleteDocument(id: string) {
   const { error: deleteError } = await supabase
     .from('documents')
     .delete()
-    .or(`id.eq.${id},path <@ '${doc.path}'`)
+    .filter('path', 'like', `${doc.path}%`)
+    .or(`id.eq.${id}`)
 
   if (deleteError) throw deleteError
 }
