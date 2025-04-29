@@ -1,3 +1,6 @@
+-- Enable the ltree extension for hierarchical data
+create extension if not exists ltree;
+
 create table documents (
   id uuid default gen_random_uuid() primary key,
   name text not null,
@@ -10,9 +13,6 @@ create table documents (
   path ltree not null,
   constraint unique_name_in_folder unique (parent_id, name, project_id)
 );
-
--- Enable the ltree extension for hierarchical data
-create extension if not exists ltree;
 
 -- Create index for faster tree operations
 create index documents_path_idx on documents using gist (path);
