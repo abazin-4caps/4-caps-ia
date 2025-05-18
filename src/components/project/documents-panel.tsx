@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FolderTree, File, FolderOpen, FolderClosed, Plus, ArrowDownToLine, Upload, Pencil, Trash2 } from "lucide-react"
+import { FolderTree, File, FolderOpen, FolderClosed, Plus, DownloadIcon, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   ContextMenu,
@@ -308,8 +308,20 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
                   Nouveau dossier
                 </ContextMenuItem>
                 <ContextMenuItem onClick={() => handleImport(doc.id)}>
-                  <ArrowDownToLine className="h-4 w-4 mr-2" />
-                  Importer des fichiers
+                  <svg 
+                    className="h-4 w-4 mr-1" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                  >
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <path d="M12 8v8"/>
+                    <path d="M8 12h8"/>
+                  </svg>
+                  Importer
                 </ContextMenuItem>
                 <ContextMenuSeparator />
               </>
@@ -373,8 +385,8 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-100">
-      <div className="p-4 border-b">
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b bg-gray-100">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Documents</h2>
           <div className="flex gap-2">
@@ -393,14 +405,26 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               onClick={() => handleImport()}
               disabled={loading || uploading}
             >
-              <ArrowDownToLine className="h-4 w-4 mr-1" />
+              <svg 
+                className="h-4 w-4 mr-1" 
+                viewBox="0 0 24 24" 
+                fill="none" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              >
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <path d="M12 8v8"/>
+                <path d="M8 12h8"/>
+              </svg>
               Importer
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-auto">
+      <div className="flex-1 p-4 overflow-y-auto bg-gray-100">
         {renderDocuments(documents)}
       </div>
 
