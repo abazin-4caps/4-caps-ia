@@ -25,6 +25,7 @@ import { DocumentsPanel } from "@/components/project/documents-panel"
 import { Document } from "@/types/document"
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
+  const router = useRouter()
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [isEditing, setIsEditing] = useState(false)
