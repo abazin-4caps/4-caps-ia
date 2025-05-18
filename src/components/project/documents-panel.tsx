@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input"
 import { Document } from "@/types/document"
 import { getProjectDocuments, createDocument, uploadFile, updateDocument, deleteDocument } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
-import { DocumentTree } from "@/components/documents/document-tree"
 
 interface DocumentsPanelProps {
   projectId: string
@@ -264,8 +263,9 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               onClick={() => {
                 if (doc.type === 'folder') {
                   toggleFolder(doc)
-                } else if (doc.file_url) {
-                  window.open(doc.file_url, '_blank')
+                } else {
+                  setSelectedDocument(doc)
+                  onDocumentSelect?.(doc)
                 }
               }}
             >
@@ -354,39 +354,36 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   }
 
   return (
-    <div className="h-full">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">Documents</h2>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleCreateFolder()}
-            disabled={loading || uploading}
-          >
-            <Plus className="h-4 w-4 mr-1" />
-            Dossier
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => handleImport()}
-            disabled={loading || uploading}
-          >
-            <Upload className="h-4 w-4 mr-1" />
-            Importer
-          </Button>
+    <div className="h-full flex flex-col">
+      <div className="p-4 border-b bg-gray-50">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Documents</h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCreateFolder()}
+              disabled={loading || uploading}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Dossier
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleImport()}
+              disabled={loading || uploading}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Importer
+            </Button>
+          </div>
         </div>
       </div>
 
-      <DocumentTree
-        documents={documents}
-        selectedDocument={selectedDocument}
-        onSelectDocument={(doc) => {
-          setSelectedDocument(doc)
-          onDocumentSelect?.(doc)
-        }}
-      />
+      <div className="flex-1 p-4 overflow-y-auto">
+        {renderDocuments(documents)}
+      </div>
 
       {/* Dialogs */}
       <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>

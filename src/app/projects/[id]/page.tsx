@@ -284,21 +284,34 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
-      {/* Zone Documents */}
-      <div className="flex-1 flex flex-col">
-        <DocumentsPanel 
-          projectId={params.id} 
-          onDocumentSelect={setSelectedDocument}
-        />
-      </div>
-
-      {/* Zone Visionneuse */}
-      <div className="flex-1 border-l">
-        <div className="p-4 border-b">
-          <h2 className="text-lg font-semibold">Visionneuse</h2>
+      {/* Conteneur principal pour les 3 zones */}
+      <div className="flex h-[calc(100vh-20rem)] gap-4">
+        {/* Zone Documents */}
+        <div className="flex-1 border rounded-lg overflow-hidden">
+          <DocumentsPanel 
+            projectId={params.id} 
+            onDocumentSelect={setSelectedDocument}
+          />
         </div>
-        <div className="p-4 h-[calc(100%-4rem)]">
-          <DocumentViewer document={selectedDocument} />
+
+        {/* Zone Visionneuse */}
+        <div className="flex-1 border rounded-lg overflow-hidden">
+          <div className="p-4 border-b bg-gray-50">
+            <h2 className="text-lg font-semibold">Visionneuse</h2>
+          </div>
+          <div className="p-4 h-[calc(100%-4rem)]">
+            <DocumentViewer document={selectedDocument} />
+          </div>
+        </div>
+
+        {/* Zone Intelligence Artificielle */}
+        <div className="flex-1 border rounded-lg overflow-hidden">
+          <div className="p-4 border-b bg-gray-50">
+            <h2 className="text-lg font-semibold">Intelligence Artificielle</h2>
+          </div>
+          <div className="p-4">
+            <p className="text-gray-500">Le chat avec l'IA sera bientôt disponible.</p>
+          </div>
         </div>
       </div>
     </DashboardShell>
