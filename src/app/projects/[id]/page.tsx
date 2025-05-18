@@ -284,10 +284,9 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
-      {/* Conteneur principal pour les 3 zones */}
-      <div className="flex h-[calc(100vh-20rem)] gap-4">
+      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-20rem)]">
         {/* Zone Documents */}
-        <div className="flex-1 border rounded-lg overflow-hidden">
+        <div className="col-span-1">
           <DocumentsPanel 
             projectId={params.id} 
             onDocumentSelect={setSelectedDocument}
@@ -295,22 +294,34 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Zone Visionneuse */}
-        <div className="flex-1 border rounded-lg overflow-hidden">
-          <div className="p-4 border-b bg-gray-50">
-            <h2 className="text-lg font-semibold">Visionneuse</h2>
-          </div>
-          <div className="p-4 h-[calc(100%-4rem)]">
-            <DocumentViewer document={selectedDocument} />
+        <div className="col-span-1">
+          <div className="h-full flex flex-col bg-[#E5E7EB]">
+            <div className="p-4 border-b">
+              <h2 className="text-lg font-semibold">Visionneuse</h2>
+            </div>
+            <div className="flex-1 p-4">
+              {selectedDocument ? (
+                <DocumentViewer document={selectedDocument} />
+              ) : (
+                <div className="text-gray-500">
+                  La visionneuse de documents sera bientôt disponible.
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Zone Intelligence Artificielle */}
-        <div className="flex-1 border rounded-lg overflow-hidden">
-          <div className="p-4 border-b bg-gray-50">
-            <h2 className="text-lg font-semibold">Intelligence Artificielle</h2>
-          </div>
-          <div className="p-4">
-            <p className="text-gray-500">Le chat avec l'IA sera bientôt disponible.</p>
+        <div className="col-span-1">
+          <div className="h-full flex flex-col bg-[#E5E7EB]">
+            <div className="p-4 border-b">
+              <h2 className="text-lg font-semibold">Intelligence Artificielle</h2>
+            </div>
+            <div className="flex-1 p-4">
+              <div className="text-gray-500">
+                Le chat avec l'IA sera bientôt disponible.
+              </div>
+            </div>
           </div>
         </div>
       </div>
