@@ -38,7 +38,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
 
   if (loading) {
     return (
-      <DashboardShell className="p-0">
+      <DashboardShell className="p-0 h-screen max-h-screen">
         <div className="p-4">Chargement...</div>
       </DashboardShell>
     )
@@ -46,15 +46,15 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
 
   if (!project) {
     return (
-      <DashboardShell className="p-0">
+      <DashboardShell className="p-0 h-screen max-h-screen">
         <div className="p-4">Projet non trouvé</div>
       </DashboardShell>
     )
   }
 
   return (
-    <DashboardShell className="p-0">
-      <div className="p-4 border-b">
+    <DashboardShell className="p-0 h-screen max-h-screen flex flex-col">
+      <div className="p-4 border-b shrink-0">
         <DashboardHeader
           heading={project.title}
           text={project.address}
@@ -63,10 +63,10 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
       
       <ResizablePanelGroup 
         direction="horizontal" 
-        className="h-[calc(100vh-8rem)]"
+        className="flex-1 overflow-hidden"
       >
         <ResizablePanel defaultSize={25} minSize={20}>
-          <div className="h-full p-4">
+          <div className="h-full overflow-auto">
             <DocumentsPanel 
               projectId={params.id}
               onDocumentSelect={setSelectedDocument}
@@ -77,7 +77,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         <ResizableHandle />
         
         <ResizablePanel defaultSize={75}>
-          <div className="h-full p-4">
+          <div className="h-full overflow-auto">
             <DocumentViewer document={selectedDocument} />
           </div>
         </ResizablePanel>
