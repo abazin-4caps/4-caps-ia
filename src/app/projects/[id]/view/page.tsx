@@ -38,7 +38,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
 
   if (loading) {
     return (
-      <DashboardShell className="p-0 h-screen max-h-screen">
+      <DashboardShell className="p-0 h-screen max-h-screen w-screen max-w-none">
         <div className="p-4">Chargement...</div>
       </DashboardShell>
     )
@@ -46,14 +46,14 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
 
   if (!project) {
     return (
-      <DashboardShell className="p-0 h-screen max-h-screen">
+      <DashboardShell className="p-0 h-screen max-h-screen w-screen max-w-none">
         <div className="p-4">Projet non trouvé</div>
       </DashboardShell>
     )
   }
 
   return (
-    <DashboardShell className="p-0 h-screen max-h-screen flex flex-col">
+    <DashboardShell className="p-0 h-screen max-h-screen w-screen max-w-none flex flex-col">
       <div className="p-4 border-b shrink-0">
         <DashboardHeader
           heading={project.title}
@@ -65,7 +65,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         direction="horizontal" 
         className="flex-1 overflow-hidden"
       >
-        <ResizablePanel defaultSize={25} minSize={20}>
+        <ResizablePanel defaultSize={25} minSize={20} className="bg-[#d6dbdc]">
           <div className="h-full overflow-auto">
             <DocumentsPanel 
               projectId={params.id}
