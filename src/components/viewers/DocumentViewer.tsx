@@ -9,6 +9,8 @@ interface DocumentViewerProps {
 }
 
 export function DocumentViewer({ document }: DocumentViewerProps) {
+  console.log('DocumentViewer received document:', document)
+
   if (!document || document.type === 'folder') {
     return (
       <div className="text-gray-500">
@@ -25,7 +27,22 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
-  // Utiliser Google Docs Viewer pour afficher le document
+  const fileExtension = document.name.split('.').pop()?.toLowerCase()
+
+  // Pour les images
+  if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
+    return (
+      <div className="h-full flex items-center justify-center">
+        <img 
+          src={document.file_url} 
+          alt={document.name}
+          className="max-h-full max-w-full object-contain"
+        />
+      </div>
+    )
+  }
+
+  // Pour les PDFs et autres documents
   const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
   
   return (

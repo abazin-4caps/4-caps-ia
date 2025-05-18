@@ -271,6 +271,16 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
     setExpandedFolders(newExpanded)
   }
 
+  const handleDocumentClick = (doc: Document) => {
+    console.log('Document clicked:', doc)
+    if (doc.type === 'folder') {
+      toggleFolder(doc)
+    } else {
+      setSelectedDocument(doc)
+      onDocumentSelect?.(doc)
+    }
+  }
+
   const renderDocuments = (docs: Document[], depth: number = 0) => {
     return docs.map((doc) => (
       <div key={doc.id}>
@@ -279,14 +289,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
             <div
               className="flex items-center gap-2 py-1 px-2 hover:bg-slate-100 rounded-md cursor-pointer"
               style={{ paddingLeft: `${(depth + 1) * 12}px` }}
-              onClick={() => {
-                if (doc.type === 'folder') {
-                  toggleFolder(doc)
-                } else {
-                  setSelectedDocument(doc)
-                  onDocumentSelect?.(doc)
-                }
-              }}
+              onClick={() => handleDocumentClick(doc)}
             >
               {doc.type === 'folder' ? (
                 expandedFolders.has(doc.id) ? (
