@@ -8,7 +8,36 @@ interface DocumentViewerProps {
   document: Document | null
 }
 
-export const DocumentViewer: FC<DocumentViewerProps> = ({ document }) => {
+export function DocumentViewer({ document }: DocumentViewerProps) {
+  if (!document || document.type === 'folder') {
+    return (
+      <div className="text-gray-500">
+        Sélectionnez un document pour le visualiser
+      </div>
+    )
+  }
+
+  if (!document.file_url) {
+    return (
+      <div className="text-gray-500">
+        Ce document n'a pas de fichier associé
+      </div>
+    )
+  }
+
+  // Utiliser Google Docs Viewer pour afficher le document
+  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
+  
+  return (
+    <iframe
+      src={viewerUrl}
+      className="w-full h-full border-0"
+      title={document.name}
+    />
+  )
+}
+
+export const DocumentViewerOld: FC<DocumentViewerProps> = ({ document }) => {
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-400">

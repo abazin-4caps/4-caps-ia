@@ -26,9 +26,10 @@ import { DocumentTree } from "@/components/documents/document-tree"
 
 interface DocumentsPanelProps {
   projectId: string
+  onDocumentSelect?: (document: Document | null) => void
 }
 
-export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
+export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelProps) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
@@ -318,16 +319,16 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   const renderViewer = () => {
     if (!selectedDocument || selectedDocument.type === 'folder') {
       return (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          <p>Sélectionnez un document pour le visualiser</p>
+        <div className="text-gray-500">
+          Sélectionnez un document pour le visualiser
         </div>
       )
     }
 
     if (!selectedDocument.file_url) {
       return (
-        <div className="h-full flex items-center justify-center text-gray-500">
-          <p>Ce document n'a pas de fichier associé</p>
+        <div className="text-gray-500">
+          Ce document n'a pas de fichier associé
         </div>
       )
     }
@@ -353,46 +354,41 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   }
 
   return (
-    <div className="h-full flex">
-      {/* Panel de gauche : Liste des documents */}
-      <div className="w-1/3 h-full border-r p-4 overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Documents</h2>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCreateFolder()}
-              disabled={loading || uploading}
-            >
-              <Plus className="h-4 w-4 mr-1" />
-              Dossier
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleImport()}
-              disabled={loading || uploading}
-            >
-              <Upload className="h-4 w-4 mr-1" />
-              Importer
-            </Button>
-          </div>
+    <div className="h-full">
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">Documents</h2>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleCreateFolder()}
+            disabled={loading || uploading}
+          >
+            <Plus className="h-4 w-4 mr-1" />
+            Dossier
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleImport()}
+            disabled={loading || uploading}
+          >
+            <Upload className="h-4 w-4 mr-1" />
+            Importer
+          </Button>
         </div>
-
-        <DocumentTree
-          documents={documents}
-          selectedDocument={selectedDocument}
-          onSelectDocument={setSelectedDocument}
-        />
       </div>
 
-      {/* Panel de droite : Visionneuse */}
-      <div className="w-2/3 h-full p-4">
-        {renderViewer()}
-      </div>
+      <DocumentTree
+        documents={documents}
+        selectedDocument={selectedDocument}
+        onSelectDocument={(doc) => {
+          setSelectedDocument(doc)
+          onDocumentSelect?.(doc)
+        }}
+      />
 
-      {/* Dialog de création de dossier */}
+      {/* Dialogs */}
       <Dialog open={isCreateFolderOpen} onOpenChange={setIsCreateFolderOpen}>
         <DialogContent>
           <DialogHeader>
@@ -421,7 +417,6 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de renommage */}
       <Dialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
         <DialogContent>
           <DialogHeader>
@@ -450,7 +445,6 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
         </DialogContent>
       </Dialog>
 
-      {/* Dialog de confirmation de suppression */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogContent>
           <DialogHeader>

@@ -20,6 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { DocumentViewer } from "@/components/viewers/DocumentViewer"
+import { DocumentsPanel } from "@/components/project/documents-panel"
+import { Document } from "@/types/document"
 
 export default function ProjectPage({ params }: { params: { id: string } }) {
   const [project, setProject] = useState<Project | null>(null)
@@ -28,6 +31,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [editedProject, setEditedProject] = useState<Partial<Project> | null>(null)
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const router = useRouter()
 
   useEffect(() => {
@@ -279,6 +283,24 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </Card>
+
+      {/* Zone Documents */}
+      <div className="flex-1 flex flex-col">
+        <DocumentsPanel 
+          projectId={params.id} 
+          onDocumentSelect={setSelectedDocument}
+        />
+      </div>
+
+      {/* Zone Visionneuse */}
+      <div className="flex-1 border-l">
+        <div className="p-4 border-b">
+          <h2 className="text-lg font-semibold">Visionneuse</h2>
+        </div>
+        <div className="p-4 h-[calc(100%-4rem)]">
+          <DocumentViewer document={selectedDocument} />
+        </div>
+      </div>
     </DashboardShell>
   )
 } 
