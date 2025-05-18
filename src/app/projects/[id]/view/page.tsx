@@ -61,7 +61,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <DashboardShell className="p-0">
+    <DashboardShell className="p-0 h-screen w-screen max-w-none">
       <div className="flex items-center justify-between p-4 border-b">
         <DashboardHeader
           heading={project.title}
@@ -75,16 +75,16 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         </Button>
       </div>
 
-      <ResizablePanelGroup direction="horizontal" className="min-h-[calc(100vh-8rem)]">
+      <ResizablePanelGroup direction="horizontal" className="h-[calc(100vh-4rem)] w-full max-w-none">
         {/* Panneau Documents */}
-        <ResizablePanel defaultSize={20}>
+        <ResizablePanel defaultSize={20} minSize={10} className="min-w-0">
           <DocumentsPanel projectId={params.id} />
         </ResizablePanel>
         
         <ResizableHandle />
 
         {/* Panneau Visionneuse */}
-        <ResizablePanel defaultSize={50}>
+        <ResizablePanel defaultSize={50} minSize={20} className="min-w-0">
           <div className="h-full border-r p-4">
             <div className="flex items-center gap-2 mb-4">
               <FileText className="h-5 w-5" />
@@ -99,7 +99,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         <ResizableHandle />
 
         {/* Panneau IA */}
-        <ResizablePanel defaultSize={30}>
+        <ResizablePanel defaultSize={30} minSize={10} className="min-w-0">
           <div className="h-full p-4">
             <div className="flex items-center gap-2 mb-4">
               <MessageSquareText className="h-5 w-5" />

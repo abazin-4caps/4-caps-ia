@@ -6,15 +6,15 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "4-CAPS IA",
-  description: "Assistant IA pour la gestion de projets immobiliers",
+  title: "Visionneuse BTP",
+  description: "Application de visualisation d'images pour le BTP",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+}: {
+  children: React.ReactNode
+}) {
   return (
     <html lang="fr">
       <body className={inter.className}>

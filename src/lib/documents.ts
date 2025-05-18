@@ -154,12 +154,14 @@ export async function deleteDocument(id: string) {
 export async function uploadFile(file: File, projectId: string, parentId?: string) {
   try {
     // Vérifier si un fichier avec le même nom existe déjà
-    const { data: existingFiles } = await supabase
+    const { data: existingFiles, error: existingError } = await supabase
       .from('documents')
       .select('name')
       .eq('project_id', projectId)
       .eq('parent_id', parentId || null)
       .eq('type', 'file')
+
+    if (existingError) throw existingError
 
     // Générer un nom unique si nécessaire
     let uniqueName = file.name
@@ -187,19 +189,30 @@ export async function uploadFile(file: File, projectId: string, parentId?: strin
     const filePath = `${projectId}/${document.id}/${uniqueName}`
     const { error: uploadError } = await supabase.storage
       .from('documents')
-      .upload(filePath, file)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      })
 
     if (uploadError) {
       // Si l'upload échoue, supprimer l'entrée dans la table
       await deleteDocument(document.id)
-      throw uploadError
+      throw new Error(`Erreur lors de l'upload du fichier: ${uploadError.message}`)
     }
 
-    // 3. Mettre à jour le document avec l'URL du fichier
+    // 3. Vérifier que le fichier est accessible
     const { data: { publicUrl } } = supabase.storage
       .from('documents')
       .getPublicUrl(filePath)
 
+    // Vérifier l'accès au fichier
+    const response = await fetch(publicUrl, { method: 'HEAD' })
+    if (!response.ok) {
+      await deleteDocument(document.id)
+      throw new Error('Le fichier a été uploadé mais n\'est pas accessible')
+    }
+
+    // 4. Mettre à jour le document avec l'URL du fichier
     const updatedDoc = await updateDocument(document.id, {
       file_url: publicUrl
     })
@@ -207,6 +220,43 @@ export async function uploadFile(file: File, projectId: string, parentId?: strin
     return updatedDoc
   } catch (error) {
     console.error('Error uploading file:', error)
+    throw error
+  }
+}
+
+export async function checkAndFixDocuments(projectId: string) {
+  try {
+    // 1. Récupérer tous les documents du projet
+    const { data: documents, error: fetchError } = await supabase
+      .from('documents')
+      .select('*')
+      .eq('project_id', projectId)
+      .eq('type', 'file')
+
+    if (fetchError) throw fetchError
+
+    // 2. Vérifier chaque document
+    for (const doc of documents) {
+      if (!doc.file_url) continue
+
+      try {
+        // Vérifier l'accès au fichier
+        const response = await fetch(doc.file_url, { method: 'HEAD' })
+        if (!response.ok) {
+          // Si le fichier n'est pas accessible, supprimer le document
+          await deleteDocument(doc.id)
+          console.warn(`Document supprimé car inaccessible: ${doc.name}`)
+        }
+      } catch (error) {
+        // En cas d'erreur, supprimer le document
+        await deleteDocument(doc.id)
+        console.warn(`Document supprimé suite à une erreur: ${doc.name}`)
+      }
+    }
+
+    return true
+  } catch (error) {
+    console.error('Error checking documents:', error)
     throw error
   }
 } 
