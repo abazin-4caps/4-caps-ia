@@ -32,8 +32,6 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
-  console.log('Page - Selected document:', selectedDocument) // Debug log
-  const router = useRouter()
 
   useEffect(() => {
     async function loadProject() {
@@ -63,6 +61,70 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
 
     loadProject()
   }, [params.id, router])
+
+  useEffect(() => {
+    const visionneuse = document.querySelector('[data-visionneuse]')
+    if (!visionneuse) return
+
+    if (!selectedDocument || selectedDocument.type === 'folder') {
+      visionneuse.innerHTML = `
+        <div class="text-gray-500">
+          La visionneuse de documents sera bientôt disponible.
+        </div>
+      `
+      return
+    }
+
+    if (!selectedDocument.file_url) {
+      visionneuse.innerHTML = `
+        <div class="text-gray-500">
+          Ce document n'a pas de fichier associé
+        </div>
+      `
+      return
+    }
+
+    const fileExtension = selectedDocument.name.split('.').pop()?.toLowerCase()
+
+    if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
+      visionneuse.innerHTML = `
+        <div class="w-full h-full flex items-center justify-center">
+          <img 
+            src="${selectedDocument.file_url}" 
+            alt="${selectedDocument.name}"
+            class="max-w-full max-h-full object-contain"
+          />
+        </div>
+      `
+      return
+    }
+
+    if (fileExtension === 'pdf') {
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.file_url)}&embedded=true`
+      visionneuse.innerHTML = `
+        <iframe
+          src="${viewerUrl}"
+          class="w-full h-full border-0"
+          title="${selectedDocument.name}"
+        ></iframe>
+      `
+      return
+    }
+
+    visionneuse.innerHTML = `
+      <div class="flex flex-col items-center justify-center h-full">
+        <p class="text-gray-500">Ce type de fichier ne peut pas être visualisé directement</p>
+        <a 
+          href="${selectedDocument.file_url}" 
+          target="_blank" 
+          rel="noopener noreferrer"
+          class="text-blue-500 hover:underline mt-2"
+        >
+          Télécharger le fichier
+        </a>
+      </div>
+    `
+  }, [selectedDocument])
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -290,29 +352,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         <div className="w-1/3">
           <DocumentsPanel 
             projectId={params.id} 
-            onDocumentSelect={(doc) => {
-              console.log('DocumentsPanel onSelect:', doc)
-              setSelectedDocument(doc)
-            }}
+            onDocumentSelect={setSelectedDocument}
           />
-        </div>
-
-        {/* Zone Visionneuse */}
-        <div id="visionneuse" className="w-1/3">
-          {selectedDocument ? (
-            <DocumentViewer document={selectedDocument} />
-          ) : (
-            <div className="text-gray-500">
-              La visionneuse de documents sera bientôt disponible.
-            </div>
-          )}
-        </div>
-
-        {/* Zone Intelligence Artificielle */}
-        <div className="w-1/3">
-          <div className="text-gray-500">
-            Le chat avec l'IA sera bientôt disponible.
-          </div>
         </div>
       </div>
     </DashboardShell>
