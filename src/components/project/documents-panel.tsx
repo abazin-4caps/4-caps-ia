@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { FolderTree, File, FolderOpen, FolderClosed, Plus, Upload, Pencil, Trash2 } from "lucide-react"
+import { FolderTree, File, FolderOpen, FolderClosed, Plus, ArrowDownToLine, Upload, Pencil, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   ContextMenu,
@@ -41,14 +41,29 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const { toast } = useToast()
 
-  useEffect(() => {
-    loadDocuments()
-  }, [projectId])
+  const sortDocuments = (docs: Document[]): Document[] => {
+    return [...docs].sort((a, b) => {
+      // Si les deux sont des dossiers ou les deux sont des fichiers, trier par nom
+      if (a.type === b.type) {
+        return a.name.localeCompare(b.name)
+      }
+      // Les dossiers viennent en premier
+      return a.type === 'folder' ? -1 : 1
+    }).map(doc => {
+      if (doc.type === 'folder' && doc.children) {
+        return {
+          ...doc,
+          children: sortDocuments(doc.children)
+        }
+      }
+      return doc
+    })
+  }
 
-  const loadDocuments = async () => {
+  const refreshDocuments = async () => {
     try {
       const docs = await getProjectDocuments(projectId)
-      setDocuments(docs)
+      setDocuments(sortDocuments(docs))
     } catch (error) {
       console.error('Error loading documents:', error)
       toast({
@@ -60,6 +75,10 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    refreshDocuments()
+  }, [projectId])
 
   const handleCreateFolder = async (parentId?: string) => {
     setSelectedParentId(parentId)
@@ -84,7 +103,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
         project_id: projectId,
         parent_id: selectedParentId
       })
-      await loadDocuments()
+      await refreshDocuments()
       setIsCreateFolderOpen(false)
       toast({
         title: "Succès",
@@ -120,7 +139,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
       await updateDocument(selectedDocument.id, {
         name: newFolderName.trim()
       })
-      await loadDocuments()
+      await refreshDocuments()
       setIsRenameOpen(false)
       toast({
         title: "Succès",
@@ -146,7 +165,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
 
     try {
       await deleteDocument(selectedDocument.id)
-      await loadDocuments()
+      await refreshDocuments()
       setIsDeleteOpen(false)
       toast({
         title: "Succès",
@@ -218,7 +237,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
         }
         
         // Recharger la liste complète après tous les uploads
-        await loadDocuments()
+        await refreshDocuments()
         
         if (hasErrors) {
           toast({
@@ -289,7 +308,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
                   Nouveau dossier
                 </ContextMenuItem>
                 <ContextMenuItem onClick={() => handleImport(doc.id)}>
-                  <Upload className="h-4 w-4 mr-2" />
+                  <ArrowDownToLine className="h-4 w-4 mr-2" />
                   Importer des fichiers
                 </ContextMenuItem>
                 <ContextMenuSeparator />
@@ -354,8 +373,8 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-100">
+      <div className="p-4 border-b">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Documents</h2>
           <div className="flex gap-2">
@@ -374,7 +393,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               onClick={() => handleImport()}
               disabled={loading || uploading}
             >
-              <Upload className="h-4 w-4 mr-1" />
+              <ArrowDownToLine className="h-4 w-4 mr-1" />
               Importer
             </Button>
           </div>
