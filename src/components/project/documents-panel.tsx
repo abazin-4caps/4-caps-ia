@@ -22,6 +22,8 @@ import { Input } from "@/components/ui/input"
 import { Document } from "@/types/document"
 import { getProjectDocuments, createDocument, uploadFile, updateDocument, deleteDocument } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
+import { DocumentTree } from "@/components/documents/document-tree"
+import { DocumentViewer } from "@/components/viewers/DocumentViewer"
 
 interface DocumentsPanelProps {
   projectId: string
@@ -323,45 +325,43 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex items-center justify-between p-2 border-b">
-        <div className="flex items-center gap-2">
-          <FolderTree className="h-5 w-5" />
-          <h2 className="font-semibold">Documents</h2>
+    <div className="flex h-full">
+      {/* Documents Tree Panel */}
+      <div className="w-1/3 border-r p-4 overflow-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold">Documents</h2>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleCreateFolder()}
+              disabled={loading || uploading}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              Dossier
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleImport()}
+              disabled={loading || uploading}
+            >
+              <Upload className="h-4 w-4 mr-1" />
+              Importer
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-1">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            title="Nouveau dossier"
-            onClick={() => handleCreateFolder()}
-            disabled={uploading}
-          >
-            <Plus className="h-4 w-4" />
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            title="Importer"
-            onClick={() => handleImport()}
-            disabled={uploading}
-          >
-            <Upload className="h-4 w-4" />
-          </Button>
-        </div>
+
+        <DocumentTree
+          documents={documents}
+          selectedDocument={selectedDocument}
+          onSelectDocument={setSelectedDocument}
+        />
       </div>
-      <div className="flex-1 overflow-auto p-2">
-        {uploading ? (
-          <div className="text-sm text-gray-500 text-center mt-4">
-            Import des fichiers en cours...
-          </div>
-        ) : documents.length === 0 ? (
-          <div className="text-sm text-gray-500 text-center mt-4">
-            Aucun document
-          </div>
-        ) : (
-          renderDocuments(documents)
-        )}
+
+      {/* Document Viewer Panel */}
+      <div className="flex-1 p-4 overflow-auto">
+        <DocumentViewer document={selectedDocument} />
       </div>
 
       {/* Dialog de création de dossier */}
