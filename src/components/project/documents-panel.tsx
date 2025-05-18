@@ -385,8 +385,8 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   }
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="p-4 border-b bg-gray-100">
+    <div className="h-full flex flex-col bg-[#E5E7EB]">
+      <div className="p-4 border-b bg-[#E5E7EB]">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Documents</h2>
           <div className="flex gap-2">
@@ -395,6 +395,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               size="sm"
               onClick={() => handleCreateFolder()}
               disabled={loading || uploading}
+              className="bg-[#E5E7EB]"
             >
               <Plus className="h-4 w-4 mr-1" />
               Dossier
@@ -404,6 +405,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               size="sm"
               onClick={() => handleImport()}
               disabled={loading || uploading}
+              className="bg-[#E5E7EB]"
             >
               <svg 
                 className="h-4 w-4 mr-1" 
@@ -424,7 +426,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
         </div>
       </div>
 
-      <div className="flex-1 p-4 overflow-y-auto bg-gray-100">
+      <div className="flex-1 p-4 overflow-y-auto bg-[#E5E7EB]">
         {renderDocuments(documents)}
       </div>
 
