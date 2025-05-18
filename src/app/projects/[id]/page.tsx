@@ -32,6 +32,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
+  console.log('Page - Selected document:', selectedDocument) // Debug log
   const router = useRouter()
 
   useEffect(() => {
@@ -188,7 +189,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </div>
 
-      <Card className="p-6 bg-white">
+      <Card className="p-6 bg-white mb-8">
         <div className="space-y-6">
           <div className="flex justify-between items-start">
             <div className="space-y-4 flex-1 mr-4">
@@ -284,41 +285,33 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
-      <div className="flex h-[calc(100vh-20rem)]">
+      <div className="flex gap-4">
         {/* Zone Documents */}
-        <div className="w-1/3 bg-[#E5E7EB]">
+        <div className="w-1/3">
           <DocumentsPanel 
             projectId={params.id} 
             onDocumentSelect={(doc) => {
-              console.log('DocumentsPanel onSelect:', doc) // Debug log
+              console.log('DocumentsPanel onSelect:', doc)
               setSelectedDocument(doc)
             }}
           />
         </div>
 
         {/* Zone Visionneuse */}
-        <div className="w-1/3 bg-[#E5E7EB] border-l">
-          <div className="h-full flex flex-col">
-            <div className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Visionneuse</h2>
+        <div id="visionneuse" className="w-1/3">
+          {selectedDocument ? (
+            <DocumentViewer document={selectedDocument} />
+          ) : (
+            <div className="text-gray-500">
+              La visionneuse de documents sera bientôt disponible.
             </div>
-            <div className="flex-1 p-4 overflow-auto">
-              <DocumentViewer document={selectedDocument} />
-            </div>
-          </div>
+          )}
         </div>
 
         {/* Zone Intelligence Artificielle */}
-        <div className="w-1/3 bg-[#E5E7EB] border-l">
-          <div className="h-full flex flex-col">
-            <div className="p-4 border-b">
-              <h2 className="text-lg font-semibold">Intelligence Artificielle</h2>
-            </div>
-            <div className="flex-1 p-4">
-              <div className="text-gray-500">
-                Le chat avec l'IA sera bientôt disponible.
-              </div>
-            </div>
+        <div className="w-1/3">
+          <div className="text-gray-500">
+            Le chat avec l'IA sera bientôt disponible.
           </div>
         </div>
       </div>

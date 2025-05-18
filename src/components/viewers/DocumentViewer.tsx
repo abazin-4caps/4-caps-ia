@@ -12,11 +12,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   console.log('DocumentViewer - Rendering with document:', document)
 
   if (!document || document.type === 'folder') {
-    return (
-      <div className="text-gray-500">
-        La visionneuse de documents sera bientôt disponible.
-      </div>
-    )
+    return null
   }
 
   if (!document.file_url) {
@@ -34,11 +30,11 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
     console.log('DocumentViewer - Rendering image:', document.file_url)
     return (
-      <div className="h-full flex items-center justify-center bg-white">
+      <div className="w-full h-full flex items-center justify-center">
         <img 
           src={document.file_url} 
           alt={document.name}
-          className="max-h-full max-w-full object-contain"
+          className="max-w-full max-h-full object-contain"
         />
       </div>
     )
@@ -51,7 +47,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     return (
       <iframe
         src={viewerUrl}
-        className="w-full h-full border-0 bg-white"
+        className="w-full h-full border-0"
         title={document.name}
       />
     )
@@ -59,8 +55,8 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
 
   // Pour les autres types de fichiers
   return (
-    <div className="flex flex-col items-center justify-center h-full text-gray-500">
-      <p>Ce type de fichier ne peut pas être visualisé directement</p>
+    <div className="flex flex-col items-center justify-center h-full">
+      <p className="text-gray-500">Ce type de fichier ne peut pas être visualisé directement</p>
       <a 
         href={document.file_url} 
         target="_blank" 
