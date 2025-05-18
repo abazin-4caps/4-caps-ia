@@ -1,3 +1,5 @@
+"use client"
+
 import { FC } from 'react'
 import { Document } from '@/types/document'
 import { FileViewer } from '@/components/FileViewer'
@@ -9,28 +11,35 @@ interface DocumentViewerProps {
 }
 
 export function DocumentViewer({ document }: DocumentViewerProps) {
-  console.log('DocumentViewer - Rendering with document:', document)
+  if (!document) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        Sélectionnez un document pour le visualiser
+      </div>
+    )
+  }
 
-  if (!document || document.type === 'folder') {
-    return null
+  if (document.type === 'folder') {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        Ceci est un dossier. Sélectionnez un fichier pour le visualiser.
+      </div>
+    )
   }
 
   if (!document.file_url) {
     return (
-      <div className="text-gray-500">
+      <div className="flex items-center justify-center h-full text-gray-500">
         Ce document n'a pas de fichier associé
       </div>
     )
   }
 
   const fileExtension = document.name.split('.').pop()?.toLowerCase()
-  console.log('DocumentViewer - File extension:', fileExtension)
 
-  // Pour les images
   if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
-    console.log('DocumentViewer - Rendering image:', document.file_url)
     return (
-      <div className="w-full h-full flex items-center justify-center">
+      <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
         <img 
           src={document.file_url} 
           alt={document.name}
@@ -40,28 +49,27 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
-  // Pour les PDFs
   if (fileExtension === 'pdf') {
-    console.log('DocumentViewer - Rendering PDF with Google Docs Viewer')
     const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
     return (
       <iframe
         src={viewerUrl}
-        className="w-full h-full border-0"
+        className="w-full h-full border-0 rounded-lg"
         title={document.name}
       />
     )
   }
 
-  // Pour les autres types de fichiers
   return (
     <div className="flex flex-col items-center justify-center h-full">
-      <p className="text-gray-500">Ce type de fichier ne peut pas être visualisé directement</p>
+      <p className="text-gray-500 mb-4">
+        Ce type de fichier ne peut pas être visualisé directement
+      </p>
       <a 
         href={document.file_url} 
         target="_blank" 
         rel="noopener noreferrer"
-        className="text-blue-500 hover:underline mt-2"
+        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
       >
         Télécharger le fichier
       </a>
