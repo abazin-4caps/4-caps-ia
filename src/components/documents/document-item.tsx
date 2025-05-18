@@ -77,7 +77,9 @@ export const DocumentItem: FC<DocumentItemProps> = ({
       )}
       <span className="text-sm">{document.name}</span>
       {hasError && (
-        <AlertCircle className="h-4 w-4 text-orange-500 ml-auto" title="Fichier inaccessible" />
+        <div title="Fichier inaccessible">
+          <AlertCircle className="h-4 w-4 text-orange-500 ml-auto" />
+        </div>
       )}
     </div>
   )
