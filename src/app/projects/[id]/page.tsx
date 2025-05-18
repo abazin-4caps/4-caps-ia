@@ -284,36 +284,33 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
         </div>
       </Card>
 
-      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-20rem)]">
+      <div className="flex h-[calc(100vh-20rem)]">
         {/* Zone Documents */}
-        <div className="col-span-1">
+        <div className="w-1/3 bg-[#E5E7EB]">
           <DocumentsPanel 
             projectId={params.id} 
-            onDocumentSelect={setSelectedDocument}
+            onDocumentSelect={(doc) => {
+              console.log('DocumentsPanel onSelect:', doc) // Debug log
+              setSelectedDocument(doc)
+            }}
           />
         </div>
 
         {/* Zone Visionneuse */}
-        <div className="col-span-1">
-          <div className="h-full flex flex-col bg-[#E5E7EB]">
+        <div className="w-1/3 bg-[#E5E7EB] border-l">
+          <div className="h-full flex flex-col">
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold">Visionneuse</h2>
             </div>
-            <div className="flex-1 p-4">
-              {selectedDocument ? (
-                <DocumentViewer document={selectedDocument} />
-              ) : (
-                <div className="text-gray-500">
-                  La visionneuse de documents sera bientôt disponible.
-                </div>
-              )}
+            <div className="flex-1 p-4 overflow-auto">
+              <DocumentViewer document={selectedDocument} />
             </div>
           </div>
         </div>
 
         {/* Zone Intelligence Artificielle */}
-        <div className="col-span-1">
-          <div className="h-full flex flex-col bg-[#E5E7EB]">
+        <div className="w-1/3 bg-[#E5E7EB] border-l">
+          <div className="h-full flex flex-col">
             <div className="p-4 border-b">
               <h2 className="text-lg font-semibold">Intelligence Artificielle</h2>
             </div>

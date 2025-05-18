@@ -9,12 +9,12 @@ interface DocumentViewerProps {
 }
 
 export function DocumentViewer({ document }: DocumentViewerProps) {
-  console.log('DocumentViewer received document:', document)
+  console.log('DocumentViewer - Rendering with document:', document)
 
   if (!document || document.type === 'folder') {
     return (
       <div className="text-gray-500">
-        Sélectionnez un document pour le visualiser
+        La visionneuse de documents sera bientôt disponible.
       </div>
     )
   }
@@ -28,11 +28,13 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   }
 
   const fileExtension = document.name.split('.').pop()?.toLowerCase()
+  console.log('DocumentViewer - File extension:', fileExtension)
 
   // Pour les images
   if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
+    console.log('DocumentViewer - Rendering image:', document.file_url)
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-white">
         <img 
           src={document.file_url} 
           alt={document.name}
@@ -42,15 +44,32 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
-  // Pour les PDFs et autres documents
-  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
-  
+  // Pour les PDFs
+  if (fileExtension === 'pdf') {
+    console.log('DocumentViewer - Rendering PDF with Google Docs Viewer')
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
+    return (
+      <iframe
+        src={viewerUrl}
+        className="w-full h-full border-0 bg-white"
+        title={document.name}
+      />
+    )
+  }
+
+  // Pour les autres types de fichiers
   return (
-    <iframe
-      src={viewerUrl}
-      className="w-full h-full border-0"
-      title={document.name}
-    />
+    <div className="flex flex-col items-center justify-center h-full text-gray-500">
+      <p>Ce type de fichier ne peut pas être visualisé directement</p>
+      <a 
+        href={document.file_url} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="text-blue-500 hover:underline mt-2"
+      >
+        Télécharger le fichier
+      </a>
+    </div>
   )
 }
 
