@@ -23,7 +23,6 @@ import { Document } from "@/types/document"
 import { getProjectDocuments, createDocument, uploadFile, updateDocument, deleteDocument } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
 import { DocumentTree } from "@/components/documents/document-tree"
-import { DocumentViewer } from "@/components/viewers/DocumentViewer"
 
 interface DocumentsPanelProps {
   projectId: string
@@ -316,6 +315,35 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
     ))
   }
 
+  const renderViewer = () => {
+    if (!selectedDocument || selectedDocument.type === 'folder') {
+      return (
+        <div className="h-full flex items-center justify-center text-gray-500">
+          <p>Sélectionnez un document pour le visualiser</p>
+        </div>
+      )
+    }
+
+    if (!selectedDocument.file_url) {
+      return (
+        <div className="h-full flex items-center justify-center text-gray-500">
+          <p>Ce document n'a pas de fichier associé</p>
+        </div>
+      )
+    }
+
+    // Utiliser Google Docs Viewer pour afficher le document
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.file_url)}&embedded=true`
+    
+    return (
+      <iframe
+        src={viewerUrl}
+        className="w-full h-full border-0"
+        title={selectedDocument.name}
+      />
+    )
+  }
+
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
@@ -325,9 +353,9 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
   }
 
   return (
-    <div className="flex h-full">
-      {/* Documents Tree Panel */}
-      <div className="w-1/3 border-r p-4 overflow-auto">
+    <div className="h-full flex">
+      {/* Panel de gauche : Liste des documents */}
+      <div className="w-1/3 h-full border-r p-4 overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold">Documents</h2>
           <div className="flex gap-2">
@@ -359,9 +387,9 @@ export function DocumentsPanel({ projectId }: DocumentsPanelProps) {
         />
       </div>
 
-      {/* Document Viewer Panel */}
-      <div className="flex-1 p-4 overflow-auto">
-        <DocumentViewer document={selectedDocument} />
+      {/* Panel de droite : Visionneuse */}
+      <div className="w-2/3 h-full p-4">
+        {renderViewer()}
       </div>
 
       {/* Dialog de création de dossier */}
