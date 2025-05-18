@@ -22,7 +22,7 @@ export async function getProjectStats(userId: string) {
   const stats = {
     total: projects.length,
     completed: projects.filter(p => p.status === 'terminé').length,
-    inProgress: projects.filter(p => p.status === 'en_cours').length
+    inProgress: projects.filter(p => p.status === 'en cours').length
   }
 
   return stats
