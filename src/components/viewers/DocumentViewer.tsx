@@ -60,6 +60,17 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
+  if (["doc", "docx", "xls", "xlsx", "ppt", "pptx"].includes(fileExtension || '')) {
+    const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(document.file_url)}`
+    return (
+      <iframe
+        src={officeUrl}
+        className="w-full h-full border-0 rounded-lg"
+        title={document.name}
+      />
+    )
+  }
+
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <p className="text-gray-500 mb-4">
