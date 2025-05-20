@@ -2,7 +2,7 @@
 
 import { DashboardShell } from "@/components/dashboard/shell"
 import { DashboardHeader } from "@/components/dashboard/header"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { Project } from "@/types"
 import { supabase } from "@/lib/supabase"
 import { useRouter } from "next/navigation"
@@ -33,6 +33,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   const [saving, setSaving] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
+  const visionneuse = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function loadProject() {
@@ -64,34 +65,26 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   }, [params.id, router])
 
   useEffect(() => {
-    const visionneuse = document.querySelector('[data-visionneuse]')
-    if (!visionneuse) return
-
-    if (!selectedDocument || selectedDocument.type === 'folder') {
-      visionneuse.innerHTML = `
-        <div class="text-gray-500">
-          La visionneuse de documents sera bientôt disponible.
-        </div>
-      `
-      return
+    if (!selectedDocument || !visionneuse.current) {
+      return;
     }
 
-    if (!selectedDocument.file_url) {
-      visionneuse.innerHTML = `
+    if (!selectedDocument.url) {
+      visionneuse.current.innerHTML = `
         <div class="text-gray-500">
           Ce document n'a pas de fichier associé
         </div>
-      `
-      return
+      `;
+      return;
     }
 
     const fileExtension = selectedDocument.name.split('.').pop()?.toLowerCase()
 
     if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension || '')) {
-      visionneuse.innerHTML = `
+      visionneuse.current.innerHTML = `
         <div class="w-full h-full flex items-center justify-center">
           <img 
-            src="${selectedDocument.file_url}" 
+            src="${selectedDocument.url}" 
             alt="${selectedDocument.name}"
             class="max-w-full max-h-full object-contain"
           />
@@ -101,8 +94,8 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
     }
 
     if (fileExtension === 'pdf') {
-      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.file_url)}&embedded=true`
-      visionneuse.innerHTML = `
+      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.url)}&embedded=true`
+      visionneuse.current.innerHTML = `
         <iframe
           src="${viewerUrl}"
           class="w-full h-full border-0"
@@ -112,11 +105,11 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
       return
     }
 
-    visionneuse.innerHTML = `
+    visionneuse.current.innerHTML = `
       <div class="flex flex-col items-center justify-center h-full">
         <p class="text-gray-500">Ce type de fichier ne peut pas être visualisé directement</p>
         <a 
-          href="${selectedDocument.file_url}" 
+          href="${selectedDocument.url}" 
           target="_blank" 
           rel="noopener noreferrer"
           class="text-blue-500 hover:underline mt-2"
@@ -179,7 +172,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <DashboardShell>
-        <div>Chargement...</div>
+        <div className="p-4">Chargement...</div>
       </DashboardShell>
     )
   }
@@ -187,7 +180,7 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
   if (!project || !editedProject) {
     return (
       <DashboardShell>
-        <div>Projet non trouvé</div>
+        <div className="p-4">Projet non trouvé</div>
       </DashboardShell>
     )
   }
@@ -355,6 +348,13 @@ export default function ProjectPage({ params }: { params: { id: string } }) {
             projectId={params.id} 
             onDocumentSelect={setSelectedDocument}
           />
+        </div>
+        <div ref={visionneuse} className="min-h-[400px] border rounded-lg p-4">
+          {!selectedDocument && (
+            <div className="text-gray-500">
+              Sélectionnez un document pour le visualiser
+            </div>
+          )}
         </div>
       </div>
     </DashboardShell>
