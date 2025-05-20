@@ -407,19 +407,15 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
         const filePath = `${projectId}/${docData.id}/${file.name}`;
         const { error: uploadError, data } = await supabase.storage
           .from('documents')
-          .upload(filePath, file, {
-            onUploadProgress: (progress) => {
-              if (progress) {
-                const percent = Math.round((progress.loaded / progress.total) * 100);
-                setUploadingFiles(prev => ({
-                  ...prev,
-                  [file.name]: percent,
-                }));
-              }
-            },
-          });
+          .upload(filePath, file);
 
         if (uploadError) throw uploadError;
+
+        // Mettre à jour la progression à 100% une fois l'upload terminé
+        setUploadingFiles(prev => ({
+          ...prev,
+          [file.name]: 100
+        }));
 
         // Mettre à jour le document avec le chemin du fichier
         const { error: updateError } = await supabase
@@ -430,12 +426,10 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
         if (updateError) throw updateError;
 
         // Obtenir l'URL publique
-        const { data: { publicUrl }, error: urlError } = await supabase
+        const { data: { publicUrl } } = await supabase
           .storage
           .from('documents')
           .getPublicUrl(filePath);
-
-        if (urlError) throw urlError;
 
         // Mettre à jour le document avec l'URL
         const { error: finalUpdateError } = await supabase
