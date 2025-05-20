@@ -22,6 +22,9 @@ import { Input } from "@/components/ui/input"
 import { Document } from "@/types/document"
 import { getProjectDocuments, createDocument, uploadFile, updateDocument, deleteDocument } from "@/lib/documents"
 import { useToast } from "@/components/ui/use-toast"
+import { supabase } from "@/lib/supabase"
+import { DocumentTree } from "@/components/documents/document-tree"
+import { Folder, Upload, X } from "lucide-react"
 
 interface DocumentsPanelProps {
   projectId: string
@@ -40,6 +43,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
   const [selectedParentId, setSelectedParentId] = useState<string | undefined>()
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const { toast } = useToast()
+  const [uploadingFiles, setUploadingFiles] = useState<{ [key: string]: number }>({})
 
   const sortDocuments = (docs: Document[]): Document[] => {
     return [...docs].sort((a, b) => {
@@ -359,7 +363,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
       )
     }
 
-    if (!selectedDocument.file_url) {
+    if (!selectedDocument.url) {
       return (
         <div className="text-gray-500">
           Ce document n'a pas de fichier associé
@@ -368,7 +372,7 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
     }
 
     // Utiliser Google Docs Viewer pour afficher le document
-    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.file_url)}&embedded=true`
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(selectedDocument.url)}&embedded=true`
     
     return (
       <iframe
@@ -378,6 +382,95 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
       />
     )
   }
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const uploadFile = async (file: File) => {
+      try {
+        // Créer l'enregistrement dans la base de données
+        const { data: docData, error: docError } = await supabase
+          .from('documents')
+          .insert({
+            name: file.name,
+            type: 'file',
+            project_id: projectId,
+            parent_id: null,
+          })
+          .select()
+          .single();
+
+        if (docError) throw docError;
+
+        // Upload le fichier
+        const filePath = `${projectId}/${docData.id}/${file.name}`;
+        const { error: uploadError, data } = await supabase.storage
+          .from('documents')
+          .upload(filePath, file, {
+            onUploadProgress: (progress) => {
+              if (progress) {
+                const percent = Math.round((progress.loaded / progress.total) * 100);
+                setUploadingFiles(prev => ({
+                  ...prev,
+                  [file.name]: percent,
+                }));
+              }
+            },
+          });
+
+        if (uploadError) throw uploadError;
+
+        // Mettre à jour le document avec le chemin du fichier
+        const { error: updateError } = await supabase
+          .from('documents')
+          .update({ path: filePath })
+          .eq('id', docData.id);
+
+        if (updateError) throw updateError;
+
+        // Obtenir l'URL publique
+        const { data: { publicUrl }, error: urlError } = await supabase
+          .storage
+          .from('documents')
+          .getPublicUrl(filePath);
+
+        if (urlError) throw urlError;
+
+        // Mettre à jour le document avec l'URL
+        const { error: finalUpdateError } = await supabase
+          .from('documents')
+          .update({ url: publicUrl })
+          .eq('id', docData.id);
+
+        if (finalUpdateError) throw finalUpdateError;
+
+        // Recharger les documents
+        refreshDocuments();
+
+        toast({
+          title: "Succès",
+          description: `${file.name} a été uploadé avec succès`,
+        });
+      } catch (error) {
+        console.error('Error uploading file:', error);
+        toast({
+          title: "Erreur",
+          description: `Erreur lors de l'upload de ${file.name}`,
+          variant: "destructive",
+        });
+      } finally {
+        setUploadingFiles(prev => {
+          const newState = { ...prev };
+          delete newState[file.name];
+          return newState;
+        });
+      }
+    };
+
+    // Upload chaque fichier
+    Array.from(files).forEach(uploadFile);
+  };
 
   if (loading) {
     return (
@@ -400,29 +493,17 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
               disabled={loading || uploading}
               className="bg-[#E5E7EB]"
             >
-              <Plus className="h-4 w-4 mr-1" />
+              <Folder className="h-4 w-4 mr-1" />
               Dossier
             </Button>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => handleImport()}
+              onClick={() => document.getElementById('file-upload')?.click()}
               disabled={loading || uploading}
               className="bg-[#E5E7EB]"
             >
-              <svg 
-                className="h-4 w-4 mr-1" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                <path d="M12 8v8"/>
-                <path d="M8 12h8"/>
-              </svg>
+              <Upload className="h-4 w-4 mr-1" />
               Importer
             </Button>
           </div>
@@ -513,6 +594,18 @@ export function DocumentsPanel({ projectId, onDocumentSelect }: DocumentsPanelPr
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {Object.entries(uploadingFiles).map(([fileName, progress]) => (
+        <div key={fileName} className="text-sm text-gray-500">
+          Uploading {fileName}: {progress}%
+        </div>
+      ))}
+
+      {selectedDocument && !selectedDocument.url && (
+        <div className="text-gray-500">
+          Ce document n'a pas de fichier associé
+        </div>
+      )}
     </div>
   )
 } 

@@ -1,6 +1,6 @@
 "use client"
 
-import { FC } from 'react'
+import React, { useState } from 'react'
 import { Document } from '@/types/document'
 import { FileViewer } from '@/components/FileViewer'
 import { ImageViewer } from '@/components/ImageViewer'
@@ -12,6 +12,9 @@ interface DocumentViewerProps {
 }
 
 export function DocumentViewer({ document }: DocumentViewerProps) {
+  const [error, setError] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
+
   if (!document) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
@@ -28,7 +31,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
-  if (!document.file_url) {
+  if (!document.url) {
     return (
       <div className="flex items-center justify-center h-full text-gray-500">
         Ce document n'a pas de fichier associé
@@ -42,7 +45,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     return (
       <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded-lg">
         <img 
-          src={document.file_url} 
+          src={document.url} 
           alt={document.name}
           className="max-w-full max-h-full object-contain"
         />
@@ -51,7 +54,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   }
 
   if (fileExtension === 'pdf') {
-    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.file_url)}&embedded=true`
+    const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(document.url)}&embedded=true`
     return (
       <iframe
         src={viewerUrl}
@@ -62,7 +65,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   }
 
   if (["doc", "docx", "xls", "xlsx", "ppt", "pptx"].includes(fileExtension || '')) {
-    const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(document.file_url)}`
+    const officeUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(document.url)}`
     return (
       <iframe
         src={officeUrl}
@@ -72,20 +75,28 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
     )
   }
 
-  if (["dwg", "dxf"].includes(fileExtension || '')) {
+  if (["dwg", "dxf", "rvt", "ifc"].includes(fileExtension || '')) {
     return (
       <div className="h-full w-full">
-        <ForgeViewer />
-        <div className="mt-4 flex flex-col items-center">
-          <a
-            href={`https://viewer.autodesk.com/?url=${encodeURIComponent(document.file_url)}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mt-2"
-          >
-            Ouvrir dans Autodesk Viewer (en ligne)
-          </a>
-        </div>
+        <ForgeViewer
+          url={document.url}
+          urn={document.urn}
+          onError={(error) => setError(error.message)}
+          onDocumentLoadSuccess={() => setIsLoading(false)}
+        />
+        {error && (
+          <div className="mt-4 flex flex-col items-center">
+            <p className="text-red-500 mb-4">{error}</p>
+            <a
+              href={`https://viewer.autodesk.com/?url=${encodeURIComponent(document.url)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+            >
+              Ouvrir dans Autodesk Viewer (en ligne)
+            </a>
+          </div>
+        )}
       </div>
     )
   }
@@ -96,7 +107,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
         Ce type de fichier ne peut pas être visualisé directement
       </p>
       <a 
-        href={document.file_url} 
+        href={document.url} 
         target="_blank" 
         rel="noopener noreferrer"
         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
@@ -107,7 +118,7 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   )
 }
 
-export const DocumentViewerOld: FC<DocumentViewerProps> = ({ document }) => {
+export const DocumentViewerOld: React.FC<DocumentViewerProps> = ({ document }) => {
   if (!document) {
     return (
       <div className="flex flex-col items-center justify-center h-full text-gray-400">
@@ -134,7 +145,7 @@ export const DocumentViewerOld: FC<DocumentViewerProps> = ({ document }) => {
       <div className="h-full">
         <FileViewer 
           file={{
-            url: document.file_url || '',
+            url: document.url || '',
             type: 'application/pdf',
             name: document.name
           }}
@@ -147,7 +158,7 @@ export const DocumentViewerOld: FC<DocumentViewerProps> = ({ document }) => {
     return (
       <div className="h-full">
         <ImageViewer 
-          images={[document.file_url || '']}
+          images={[document.url || '']}
         />
       </div>
     )
@@ -158,7 +169,7 @@ export const DocumentViewerOld: FC<DocumentViewerProps> = ({ document }) => {
     <div className="flex flex-col items-center justify-center h-full text-gray-400">
       <p>Ce type de fichier ne peut pas être visualisé directement</p>
       <a 
-        href={document.file_url} 
+        href={document.url} 
         target="_blank" 
         rel="noopener noreferrer"
         className="text-blue-500 hover:underline mt-2"

@@ -1,5 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import ForgeViewer from './ForgeViewer';
+import { Orbit, Move, ZoomIn, Maximize } from 'lucide-react';
 
 interface ModelViewerProps {
   url: string;
