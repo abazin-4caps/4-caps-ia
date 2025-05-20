@@ -76,6 +76,24 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
   }
 
   if (["dwg", "dxf", "rvt", "ifc"].includes(fileExtension || '')) {
+    if (!document.urn) {
+      return (
+        <div className="flex flex-col items-center justify-center h-full">
+          <p className="text-gray-500 mb-4">
+            Ce fichier n'a pas encore été converti pour la visualisation 3D
+          </p>
+          <a 
+            href={document.url} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+          >
+            Télécharger le fichier
+          </a>
+        </div>
+      )
+    }
+
     return (
       <div className="h-full w-full">
         <ForgeViewer
