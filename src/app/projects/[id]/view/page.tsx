@@ -3,12 +3,12 @@
 import { DashboardShell } from "@/components/dashboard/shell"
 import { DashboardHeader } from "@/components/dashboard/header"
 import { DocumentsPanel } from "@/components/project/documents-panel"
-import { DocumentViewer } from "@/components/viewers/DocumentViewer"
 import { Document } from "@/types/document"
 import { Project } from "@/types"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
+import DWGViewer from '@/components/DWGViewer'
 
 export default function ProjectViewPage({ params }: { params: { id: string } }) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
@@ -35,6 +35,31 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
 
     loadProject()
   }, [params.id])
+
+  const handleDocumentSelect = async (document: Document | null) => {
+    if (!document) {
+      setSelectedDocument(null);
+      return;
+    }
+    
+    setSelectedDocument(document);
+    if (document.path) {
+      try {
+        const { data } = await supabase
+          .storage
+          .from('documents')
+          .getPublicUrl(document.path);
+
+        // Mettre à jour le document avec l'URL publique
+        setSelectedDocument({
+          ...document,
+          url: data.publicUrl
+        });
+      } catch (error) {
+        console.error('Error getting public URL:', error);
+      }
+    }
+  };
 
   if (loading) {
     return (
@@ -69,7 +94,7 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
           <div className="h-full overflow-auto">
             <DocumentsPanel 
               projectId={params.id}
-              onDocumentSelect={setSelectedDocument}
+              onDocumentSelect={handleDocumentSelect}
             />
           </div>
         </ResizablePanel>
@@ -78,7 +103,9 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         
         <ResizablePanel defaultSize={75}>
           <div className="h-full overflow-auto">
-            <DocumentViewer document={selectedDocument} />
+            <DWGViewer 
+              existingFileUrl={selectedDocument?.url} 
+            />
           </div>
         </ResizablePanel>
       </ResizablePanelGroup>

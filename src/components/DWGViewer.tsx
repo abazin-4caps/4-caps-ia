@@ -1,14 +1,72 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone, DropzoneOptions } from 'react-dropzone';
 import ForgeViewer from './ForgeViewer';
 
-export default function DWGViewer() {
+interface DWGViewerProps {
+  existingFileUrl?: string;
+}
+
+export default function DWGViewer({ existingFileUrl }: DWGViewerProps) {
   const [uploadStatus, setUploadStatus] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [urn, setUrn] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    if (existingFileUrl) {
+      handleExistingFile(existingFileUrl);
+    }
+  }, [existingFileUrl]);
+
+  const handleExistingFile = async (fileUrl: string) => {
+    setIsLoading(true);
+    setError('');
+    setUploadStatus('Processing file...');
+
+    try {
+      // Lancer la conversion directement pour un fichier existant
+      const translateResponse = await fetch('/api/forge/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          objectId: fileUrl,
+        }),
+      });
+
+      if (!translateResponse.ok) {
+        throw new Error('Failed to start conversion');
+      }
+
+      const translateData = await translateResponse.json();
+      setUrn(translateData.urn);
+
+      // Vérifier le statut de la conversion
+      let status = 'pending';
+      while (status === 'pending' || status === 'inprogress') {
+        const statusResponse = await fetch(`/api/forge/translate?urn=${translateData.urn}`);
+        const statusData = await statusResponse.json();
+        
+        status = statusData.status;
+        if (status === 'success') {
+          setUploadStatus('File ready for viewing');
+          break;
+        } else if (status === 'failed') {
+          throw new Error('Conversion failed');
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      setUploadStatus('');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
@@ -84,14 +142,17 @@ export default function DWGViewer() {
       'image/vnd.dwg': ['.dwg'],
     },
     maxFiles: 1,
-    multiple: false
+    multiple: false,
+    noClick: !!existingFileUrl, // Désactive le clic si un fichier existe déjà
+    noKeyboard: !!existingFileUrl, // Désactive la navigation clavier si un fichier existe déjà
+    noDrag: !!existingFileUrl, // Désactive le drag & drop si un fichier existe déjà
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone(dropzoneOptions);
 
   return (
     <div className="w-full h-full min-h-screen">
-      {!urn && (
+      {!urn && !existingFileUrl && (
         <div
           {...getRootProps()}
           className={`border-2 border-dashed p-8 text-center cursor-pointer transition-colors
@@ -108,13 +169,19 @@ export default function DWGViewer() {
         </div>
       )}
 
-      {urn && (
+      {(urn || isLoading) && (
         <div className="w-full h-full min-h-screen">
-          <ForgeViewer
-            fileUrl={urn}
-            onError={(error) => setError(error.message)}
-            onDocumentLoadSuccess={() => setUploadStatus('Document loaded successfully')}
-          />
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">
+              <p className="text-blue-600">{uploadStatus}</p>
+            </div>
+          ) : (
+            <ForgeViewer
+              fileUrl={urn}
+              onError={(error) => setError(error.message)}
+              onDocumentLoadSuccess={() => setUploadStatus('Document loaded successfully')}
+            />
+          )}
         </div>
       )}
     </div>

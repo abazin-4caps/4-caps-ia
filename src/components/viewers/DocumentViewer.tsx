@@ -5,6 +5,7 @@ import { Document } from '@/types/document'
 import { FileViewer } from '@/components/FileViewer'
 import { ImageViewer } from '@/components/ImageViewer'
 import { FileX } from 'lucide-react'
+import ForgeViewer from './ForgeViewer'
 
 interface DocumentViewerProps {
   document: Document | null
@@ -68,6 +69,24 @@ export function DocumentViewer({ document }: DocumentViewerProps) {
         className="w-full h-full border-0 rounded-lg"
         title={document.name}
       />
+    )
+  }
+
+  if (["dwg", "dxf"].includes(fileExtension || '')) {
+    return (
+      <div className="h-full w-full">
+        <ForgeViewer />
+        <div className="mt-4 flex flex-col items-center">
+          <a
+            href={`https://viewer.autodesk.com/?url=${encodeURIComponent(document.file_url)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors mt-2"
+          >
+            Ouvrir dans Autodesk Viewer (en ligne)
+          </a>
+        </div>
+      </div>
     )
   }
 
