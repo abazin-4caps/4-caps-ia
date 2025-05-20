@@ -1,86 +1,102 @@
-import { FC, useEffect, useState } from 'react'
-import { Document } from '@/types/document'
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { FolderIcon, FileIcon, ChevronDownIcon, ChevronRightIcon, AlertCircle } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
+'use client';
+
+import { useState, useEffect } from 'react';
+import { Document } from '@/types/document';
+import { ChevronRight, File, Folder } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { supabase } from '@/lib/supabase';
 
 interface DocumentItemProps {
-  document: Document
-  isSelected: boolean
-  isExpanded?: boolean
-  depth: number
-  onSelect: (doc: Document) => void
-  onToggleExpand?: (doc: Document) => void
+  document: Document;
+  level?: number;
+  onSelect?: (document: Document) => void;
+  isSelected?: boolean;
 }
 
-export const DocumentItem: FC<DocumentItemProps> = ({
+export function DocumentItem({
   document,
-  isSelected,
-  isExpanded,
-  depth,
+  level = 0,
   onSelect,
-  onToggleExpand
-}) => {
-  const [hasError, setHasError] = useState(false)
-  const isFolder = document.type === 'folder'
-  const hasChildren = isFolder && document.children && document.children.length > 0
+  isSelected = false,
+}: DocumentItemProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const isFolder = document.type === 'folder';
+  const hasChildren = isFolder && document.children && document.children.length > 0;
 
   useEffect(() => {
     const checkFileAccess = async () => {
-      if (document.type === 'file' && document.file_url) {
-        try {
-          const response = await fetch(document.file_url, { method: 'HEAD' })
-          if (!response.ok) {
-            setHasError(true)
-          }
-        } catch (error) {
-          setHasError(true)
-        }
-      }
-    }
+      if (!document.path || document.type === 'folder') return;
 
-    checkFileAccess()
-  }, [document])
+      try {
+        const { data, error } = await supabase
+          .storage
+          .from('documents')
+          .createSignedUrl(document.path, 60);
+
+        if (error) {
+          console.error('Error checking file access:', error);
+          setHasError(true);
+        }
+      } catch (error) {
+        console.error('Error checking file access:', error);
+        setHasError(true);
+      }
+    };
+
+    checkFileAccess();
+  }, [document]);
+
+  const handleClick = () => {
+    if (isFolder) {
+      setIsExpanded(!isExpanded);
+    }
+    if (onSelect && !hasError) {
+      onSelect(document);
+    }
+  };
 
   return (
-    <div
-      className={cn(
-        'flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-slate-100 transition-colors',
-        isSelected && 'bg-slate-100',
-        hasError && 'text-orange-500',
-        'ml-' + (depth * 4)
-      )}
-      onClick={() => onSelect(document)}
-    >
-      {isFolder && hasChildren && (
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-4 w-4"
-          onClick={(e) => {
-            e.stopPropagation()
-            onToggleExpand?.(document)
-          }}
-        >
-          {isExpanded ? (
-            <ChevronDownIcon className="h-4 w-4" />
-          ) : (
-            <ChevronRightIcon className="h-4 w-4" />
+    <div>
+      <div
+        className={cn(
+          'flex items-center gap-2 px-2 py-1 rounded cursor-pointer hover:bg-gray-100',
+          isSelected && 'bg-blue-50 hover:bg-blue-100',
+          hasError && 'opacity-50 cursor-not-allowed'
+        )}
+        style={{ paddingLeft: `${level * 16 + 8}px` }}
+        onClick={handleClick}
+      >
+        <ChevronRight
+          className={cn(
+            'h-4 w-4 transition-transform',
+            isExpanded && 'transform rotate-90',
+            !isFolder && 'invisible'
           )}
-        </Button>
-      )}
-      {isFolder ? (
-        <FolderIcon className={cn("h-4 w-4", hasError ? "text-orange-500" : "text-blue-500")} />
-      ) : (
-        <FileIcon className={cn("h-4 w-4", hasError ? "text-orange-500" : "text-gray-500")} />
-      )}
-      <span className="text-sm">{document.name}</span>
-      {hasError && (
-        <div title="Fichier inaccessible">
-          <AlertCircle className="h-4 w-4 text-orange-500 ml-auto" />
+        />
+        {isFolder ? (
+          <Folder className="h-4 w-4 text-blue-500" />
+        ) : (
+          <File className="h-4 w-4 text-gray-500" />
+        )}
+        <span className={cn('text-sm', hasError && 'text-gray-400')}>
+          {document.name}
+        </span>
+      </div>
+
+      {isExpanded && hasChildren && document.children && (
+        <div>
+          {document.children.map((child) => (
+            <DocumentItem
+              key={child.id}
+              document={child}
+              level={level + 1}
+              onSelect={onSelect}
+              isSelected={isSelected}
+            />
+          ))}
         </div>
       )}
     </div>
-  )
+  );
 } 
