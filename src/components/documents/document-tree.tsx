@@ -1,48 +1,35 @@
-import { FC, useState } from 'react'
+'use client';
+
+import { useState } from 'react'
 import { Document } from '@/types/document'
 import { DocumentItem } from './document-item'
 
 interface DocumentTreeProps {
   documents: Document[]
-  selectedDocument?: Document | null
-  onSelectDocument: (doc: Document) => void
+  selectedDocument: Document | null
+  onSelectDocument: (document: Document) => void
 }
 
-export const DocumentTree: FC<DocumentTreeProps> = ({
+export function DocumentTree({
   documents,
   selectedDocument,
   onSelectDocument,
-}) => {
-  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
-
-  const toggleFolder = (doc: Document) => {
-    const newExpanded = new Set(expandedFolders)
-    if (newExpanded.has(doc.id)) {
-      newExpanded.delete(doc.id)
-    } else {
-      newExpanded.add(doc.id)
-    }
-    setExpandedFolders(newExpanded)
-  }
-
-  const renderDocuments = (docs: Document[], depth: number = 0) => {
+}: DocumentTreeProps) {
+  const renderDocuments = (docs: Document[], level: number = 0) => {
     return docs.map((doc) => (
-      <div key={doc.id}>
-        <DocumentItem
-          document={doc}
-          isSelected={selectedDocument?.id === doc.id}
-          isExpanded={expandedFolders.has(doc.id)}
-          depth={depth}
-          onSelect={onSelectDocument}
-          onToggleExpand={toggleFolder}
-        />
-        {doc.type === 'folder' &&
-          expandedFolders.has(doc.id) &&
-          doc.children &&
-          renderDocuments(doc.children, depth + 1)}
-      </div>
+      <DocumentItem
+        key={doc.id}
+        document={doc}
+        level={level}
+        onSelect={onSelectDocument}
+        isSelected={selectedDocument?.id === doc.id}
+      />
     ))
   }
 
-  return <div className="w-full">{renderDocuments(documents)}</div>
+  return (
+    <div className="space-y-1">
+      {renderDocuments(documents)}
+    </div>
+  )
 } 
