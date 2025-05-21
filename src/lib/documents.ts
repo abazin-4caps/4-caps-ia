@@ -11,144 +11,50 @@ function sanitizeLtreePath(path: string): string {
     .replace(/^[0-9]/, 'n$&')
 }
 
-export async function getProjectDocuments(projectId: string) {
+export async function getProjectDocuments(projectId: string): Promise<Document[]> {
   const { data, error } = await supabase
     .from('documents')
     .select('*')
     .eq('project_id', projectId)
-    .order('path')
+    .order('created_at', { ascending: true })
 
   if (error) throw error
 
-  // Convertir la liste plate en arborescence
-  const documents = data as Document[]
-  const tree: Document[] = []
-  const map = new Map<string, Document>()
-
-  // Créer un map de tous les documents
-  documents.forEach(doc => {
-    map.set(doc.id, { ...doc, children: [] })
-  })
-
-  // Construire l'arborescence
-  documents.forEach(doc => {
-    const document = map.get(doc.id)!
-    if (doc.parent_id) {
-      const parent = map.get(doc.parent_id)
-      if (parent) {
-        parent.children = parent.children || []
-        parent.children.push(document)
-      }
-    } else {
-      tree.push(document)
-    }
-  })
-
-  return tree
+  return data || []
 }
 
-export async function createDocument(document: Omit<Document, 'id' | 'created_at' | 'updated_at' | 'path'>) {
-  // Récupérer l'utilisateur connecté
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) throw new Error('User not authenticated')
-
-  // Sanitize le nom pour le path ltree
-  let sanitizedName = sanitizeLtreePath(document.name)
-
-  // Si le nom est vide après sanitization, utiliser un fallback
-  if (!sanitizedName) {
-    sanitizedName = 'document_' + Date.now()
-  }
-
-  // Construire le path ltree
-  let path = sanitizedName
-  if (document.parent_id) {
-    const { data: parent } = await supabase
-      .from('documents')
-      .select('path')
-      .eq('id', document.parent_id)
-      .single()
-    
-    if (parent) {
-      path = `${parent.path}.${sanitizedName}`
-    }
-  } else {
-    path = `root.${sanitizedName}`
-  }
-
+export async function createDocument(document: Partial<Document>): Promise<Document> {
   const { data, error } = await supabase
     .from('documents')
-    .insert([{ ...document, path, created_by: user.id }])
+    .insert(document)
     .select()
     .single()
 
   if (error) throw error
+
   return data
 }
 
-export async function updateDocument(id: string, document: Partial<Document>) {
+export async function updateDocument(id: string, updates: Partial<Document>): Promise<Document> {
   const { data, error } = await supabase
     .from('documents')
-    .update(document)
+    .update(updates)
     .eq('id', id)
     .select()
     .single()
 
   if (error) throw error
+
   return data
 }
 
-export async function deleteDocument(id: string) {
-  try {
-    // 1. Récupérer le document
-    const { data: doc, error: docError } = await supabase
-      .from('documents')
-      .select('*')
-      .eq('id', id)
-      .single()
+export async function deleteDocument(id: string): Promise<void> {
+  const { error } = await supabase
+    .from('documents')
+    .delete()
+    .eq('id', id)
 
-    if (docError) throw docError
-
-    // 2. Si c'est un fichier, supprimer le fichier du storage
-    if (doc.type === 'file' && doc.file_url) {
-      const filePath = `${doc.project_id}/${doc.id}/${doc.name}`
-      const { error: storageError } = await supabase.storage
-        .from('documents')
-        .remove([filePath])
-
-      if (storageError) throw storageError
-    }
-
-    // 3. Récupérer tous les documents enfants en utilisant une requête SQL native
-    const { data: children, error: childrenError } = await supabase
-      .rpc('get_document_children', { parent_path: doc.path })
-
-    if (childrenError) throw childrenError
-
-    // 4. Supprimer les enfants s'il y en a
-    if (children && children.length > 0) {
-      const childrenIds = children.map((child: { id: string }) => child.id)
-      const { error: deleteChildrenError } = await supabase
-        .from('documents')
-        .delete()
-        .in('id', childrenIds)
-
-      if (deleteChildrenError) throw deleteChildrenError
-    }
-
-    // 5. Supprimer le document lui-même
-    const { error: deleteError } = await supabase
-      .from('documents')
-      .delete()
-      .eq('id', id)
-
-    if (deleteError) throw deleteError
-
-    return true
-  } catch (error) {
-    console.error('Error in deleteDocument:', error)
-    throw error
-  }
+  if (error) throw error
 }
 
 export async function uploadFile(file: File, projectId: string, parentId?: string) {

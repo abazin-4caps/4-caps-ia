@@ -1,35 +1,32 @@
 'use client';
 
-import { useState } from 'react'
-import { Document } from '@/types/document'
-import { DocumentItem } from './document-item'
+import React from 'react';
+import { Document } from '@/types/document';
+import { FolderTree, File as FileIcon, FolderOpen, FolderClosed } from "lucide-react"
 
 interface DocumentTreeProps {
-  documents: Document[]
-  selectedDocument: Document | null
-  onSelectDocument: (document: Document) => void
+  documents: Document[];
+  onSelect?: (document: Document | null) => void;
+  onRefresh?: () => void;
 }
 
-export function DocumentTree({
-  documents,
-  selectedDocument,
-  onSelectDocument,
-}: DocumentTreeProps) {
-  const renderDocuments = (docs: Document[], level: number = 0) => {
-    return docs.map((doc) => (
-      <DocumentItem
-        key={doc.id}
-        document={doc}
-        level={level}
-        onSelect={onSelectDocument}
-        isSelected={selectedDocument?.id === doc.id}
-      />
-    ))
-  }
-
+export const DocumentTree: React.FC<DocumentTreeProps> = ({ documents, onSelect, onRefresh }) => {
   return (
-    <div className="space-y-1">
-      {renderDocuments(documents)}
+    <div className="flex-1 overflow-auto">
+      {documents.map((doc) => (
+        <div
+          key={doc.id}
+          className="flex items-center p-2 hover:bg-gray-100 cursor-pointer"
+          onClick={() => onSelect?.(doc)}
+        >
+          {doc.type === 'folder' ? (
+            <FolderClosed className="w-5 h-5 mr-2 text-yellow-500" />
+          ) : (
+            <FileIcon className="w-5 h-5 mr-2 text-blue-500" />
+          )}
+          <span>{doc.name}</span>
+        </div>
+      ))}
     </div>
-  )
-} 
+  );
+}; 

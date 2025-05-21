@@ -2,13 +2,13 @@
 
 import { DashboardShell } from "@/components/dashboard/shell"
 import { DashboardHeader } from "@/components/dashboard/header"
-import { DocumentsPanel } from "@/components/project/documents-panel"
+import DocumentsPanel from "@/components/project/documents-panel"
 import { Document } from "@/types/document"
 import { Project } from "@/types"
 import { useEffect, useState } from "react"
 import { supabase } from "@/lib/supabase"
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable"
-import DWGViewer from '@/components/DWGViewer'
+import { DocumentViewer } from '@/components/viewers/DocumentViewer'
 
 export default function ProjectViewPage({ params }: { params: { id: string } }) {
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
@@ -103,8 +103,8 @@ export default function ProjectViewPage({ params }: { params: { id: string } }) 
         
         <ResizablePanel defaultSize={75}>
           <div className="h-full overflow-auto">
-            <DWGViewer 
-              existingFileUrl={selectedDocument?.url} 
+            <DocumentViewer 
+              document={selectedDocument}
             />
           </div>
         </ResizablePanel>
